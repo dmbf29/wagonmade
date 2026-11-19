@@ -1,5 +1,5 @@
 /* ───────────────────────────────────────────────────────────────────────────
-   Homemade · hand-written CSS, Le Wagon 2024+ palette as CSS variables.
+   Wagonmade · hand-written CSS, Le Wagon 2024+ palette as CSS variables.
    Tints (80/60/40/20 %) are the color mixed with white.
    ─────────────────────────────────────────────────────────────────────────── */
 
@@ -77,7 +77,7 @@ em { color: var(--tonic); font-style: normal; }
 /* ── top bar ── */
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px clamp(16px, 4vw, 48px); }
 .brand { display: flex; align-items: center; gap: 14px; background: none; border: 0; padding: 4px 0; }
-.brand-logo { height: 32px; width: auto; }
+.brand-logo { height: 36px; width: 36px; border-radius: 8px; }
 .brand-name { font-family: var(--font-head); font-weight: 900; font-size: 1.5rem; letter-spacing: -0.02em; }
 
 /* ── buttons & inputs ── */
@@ -133,7 +133,7 @@ em { color: var(--tonic); font-style: normal; }
 .hero-sub { margin-top: 10px; }
 .hero-scores { display: grid; gap: 16px; }
 .score-panel { background: rgba(255, 255, 255, 0.08); border-radius: var(--radius); padding: 20px 28px; }
-.score-homemade { background: var(--white); color: var(--black); }
+.score-wagonmade { background: var(--white); color: var(--black); }
 .score-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .big-number { font-family: var(--font-head); font-weight: 900; font-size: clamp(4rem, 9vw, 7rem); line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
 .big-number.small { font-size: clamp(2.6rem, 5vw, 4rem); }
@@ -141,7 +141,7 @@ em { color: var(--tonic); font-style: normal; }
 .stamp { font-size: 4.2rem; width: 6.5rem; height: 6.5rem; border: 6px solid currentColor; outline: 3px solid rgba(255, 255, 255, 0.5); outline-offset: -12px; box-shadow: 0 6px 18px rgba(55, 19, 115, 0.25); transform: rotate(-8deg); }
 .animate .stamp { animation: stamp 0.7s cubic-bezier(0.2, 1.6, 0.4, 1) 2.2s both; }
 .animate .score-panel { animation: rise 0.6s both; }
-.animate .score-homemade { animation-delay: 0.1s; }
+.animate .score-wagonmade { animation-delay: 0.1s; }
 
 .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 24px 0; }
 
@@ -159,7 +159,7 @@ em { color: var(--tonic); font-style: normal; }
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px; }
 .card { background: var(--white); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); animation: rise 0.55s both; animation-delay: calc(var(--i, 0) * 60ms); }
 .cat.is-open { grid-column: 1 / -1; }
-.cat.is-headline { border: 3px solid var(--tonic-40); }
+.cat.is-headline { border: 3px solid var(--tonic-40); grid-column: 1 / -1; } /* headline card spans the grid: 1 + 6 cards = no orphan */
 .cat.is-na { background: var(--cream); box-shadow: none; }
 .cat-head { display: flex; align-items: center; gap: 16px; width: 100%; background: none; border: 0; padding: 0; text-align: left; }
 .cat-head:disabled { cursor: default; }
@@ -307,3 +307,8 @@ body.is-presenting { overflow: hidden; }
 .history-pick { width: 18px; height: 18px; accent-color: var(--tonic); flex: none; margin-left: 4px; }
 .compare-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--tonic-20); border-radius: var(--radius-sm); padding: 8px 12px; margin: 12px 0; }
 @media (max-width: 600px) { .weights li { grid-template-columns: 1fr; gap: 4px; } .change-cats li { grid-template-columns: 1fr auto auto; } }
+
+.quickchecks { margin-top: 24px; }
+.quickchecks summary { cursor: pointer; font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; }
+.quickchecks ul { columns: 2 320px; padding-left: 1.2em; margin: 12px 0 0; }
+.quickchecks li { break-inside: avoid; margin-bottom: 6px; }

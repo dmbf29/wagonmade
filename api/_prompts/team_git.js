@@ -2,7 +2,7 @@ export default `
 TEAM & GIT WORKFLOW: pull requests vs direct pushes, PR size, branch names, commit messages, PR descriptions and reviews, how work is spread across the team.
 
 You get no code for this category, only facts from the GitHub API in "AUTOMATED FACTS" (repo mode) or the pull-request data (PR mode).
-This is the students' first time collaborating on GitHub: be extra kind and celebrate any use of branches and pull requests.
+This is the students' first time collaborating on GitHub: be extra kind and celebrate any use of branches and pull requests. What the course taught ("Git & GitHub" lecture): one feature branch per user story, pull requests to merge, and never committing directly on master once the team starts building; also deploying to production early and often.
 
 Look at:
 - Pull requests used (and merged) vs commits pushed directly to the main branch. Direct pushes numbers are approximate.

@@ -7,6 +7,9 @@ import { CATEGORIES, gradeFor } from '../../shared/config.js'
 import { runChecks, limitChecksToPR, factsForCategory } from '../../shared/checks.js'
 import { selectFiles } from '../../shared/select.js'
 import { buildReport } from './report.js'
+import { mergeFindings, partsFor, sameFinding, splitFiles } from './split.js'
+import { forcedLevelUps } from '../../shared/forced.js'
+import { capScore } from '../../shared/scoring.js'
 
 export async function postJson(url, body) {
   let res
@@ -37,21 +40,52 @@ function makeContext(data, checks) {
 }
 
 // One category: N/A short-circuit, file selection, the AI call. Never throws: errors become { error }.
-async function analyzeOne(cat, { data, checks, tree, repoRef, skippedPaths }) {
+// Put the teacher's must-flag checks (Tailwind, hard-coded colors, raw AI clients...) first, whatever the AI said,
+// then apply the score ceiling again because the level-ups changed.
+function withForced(cat, r, checks, data, repoRef) {
+  if (r.error || r.applicable === false) return r
+  const forced = forcedLevelUps(cat.id, checks, data.files, repoRef)
+  if (!forced.length) return r
+  const rest = (r.levelUps || []).filter((l) => !forced.some((f) => sameFinding(f, l)))
+  const levelUps = [...forced, ...rest].slice(0, 4)
+  const cap = capScore(r.score, levelUps)
+  return { ...r, levelUps, score: cap.score, grade: cap.capped ? gradeFor(cap.score) : r.grade, capped: r.capped || cap.capped }
+}
+
+async function analyzeOne(cat, ctx) {
+  return withForced(cat, await analyzeCore(cat, ctx), ctx.checks, ctx.data, ctx.repoRef)
+}
+
+async function analyzeCore(cat, { data, checks, tree, repoRef, skippedPaths }) {
   try {
     if (cat.canBeNA && !checks.features.ai && !checks.features.uploads) {
       return { category: cat.id, applicable: false, score: null, grade: 'N/A', verdict: "No AI chat or uploads in this app yet, so nothing to grade here. Ready for the final project!", wins: [], levelUps: [], removed: 0 }
     }
     if (cat.kind === 'git' && !data.git) throw new Error('GitHub did not share the repository history.')
     const { selected, left } = selectFiles(cat, data.files, { mode: data.mode })
-    return await postJson('/api/analyze', {
-      category: cat.id,
-      files: selected.map((f) => ({ path: f.path, content: f.content, changed: f.changed, truncated: f.truncated })),
+    const base = {
       skippedPaths: [...skippedPaths, ...left].slice(0, 20),
       versions: checks.versions,
       facts: factsForCategory(checks, cat),
       mode: data.mode, pr: data.pr, git: data.git, tree, repo: repoRef,
-    })
+      noUploads: !checks.stats.hasUploads,
+    }
+    const slim = (fs) => fs.map((f) => ({ path: f.path, content: f.content, changed: f.changed, truncated: f.truncated }))
+    const n = cat.kind === 'code' ? partsFor(selected) : 1
+
+    // small category: one call does everything
+    if (n === 1) return await postJson('/api/analyze', { ...base, category: cat.id, files: slim(selected) })
+
+    // big category: read in parts (parallel), then one small call scores the verified findings
+    const groups = splitFiles(selected, n)
+    const found = await Promise.all(groups.map((g, i) => postJson('/api/analyze', { ...base, category: cat.id, stage: 'findings', part: { index: i + 1, total: n }, files: slim(g) })))
+    const merged = mergeFindings(found)
+    const brief = {
+      wins: merged.wins.map((w) => ({ title: w.title, detail: w.detail })),
+      levelUps: merged.levelUps.map((l) => ({ title: l.title, why: l.why, concept: l.concept, confidence: l.confidence, impact: l.impact, file: l.evidence?.file })),
+    }
+    const summary = await postJson('/api/analyze', { category: cat.id, stage: 'summary', findings: brief, facts: base.facts, versions: base.versions, mode: base.mode, filesSeen: merged.filesSeen, skippedPaths: base.skippedPaths })
+    return { ...summary, wins: merged.wins, levelUps: merged.levelUps, removed: merged.removed, filesSeen: merged.filesSeen, parts: n }
   } catch (err) {
     return { category: cat.id, error: err.message, hint: err.hint }
   }

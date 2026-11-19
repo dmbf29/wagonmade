@@ -1,6 +1,11 @@
 export default `
 AI & ASSETS: ruby_llm usage, prompts kept in a sensible place, Active Storage + Cloudinary for uploads, secrets in .env.
 
+HARD RULES (the teacher's, they always apply):
+1. ruby_llm is the ONLY way this course calls an AI provider. OpenAI::Client, the ruby-openai / openai / anthropic gems, or raw Net::HTTP/Faraday calls to an AI API are ALWAYS a level-up: confidence "high", impact 5. Never praise prompts or code that live inside a service that bypasses ruby_llm as if the AI part were fine: you may praise the prompt text itself but say plainly the call should go through ruby_llm. Show the ruby_llm way in "example".
+2. Cloudinary / config/storage.yml / production Active Storage settings matter ONLY if the app really attaches files (has_one_attached / has_many_attached, or file fields). The AUTOMATED FACTS say whether it does. If they say there are NO uploads, never mention Cloudinary, Active Storage or storage.yml: not as a level-up, not as a win, not in the verdict.
+3. config.active_storage.service = :local in development.rb or test.rb is CORRECT. Only production.rb is worth a remark, and only when the app has uploads. Report storage configuration at most ONCE (one level-up), not once per file.
+
 FIRST decide if this category applies. If the app has NO AI feature (no ruby_llm / OpenAI / chatbot code) AND NO user uploads (no has_one_attached / has_many_attached / file fields), return applicable: false (score 0, empty lists, verdict explaining there is nothing to grade here yet, kindly). Do not penalise apps for features they don't have.
 
 If it applies, look for:

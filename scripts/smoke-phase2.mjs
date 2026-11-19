@@ -13,10 +13,10 @@ const el = async (p, props) => renderToString(React.createElement((await vite.ss
 const ok = (c, m) => { console.log(c ? 'ok  ' : 'FAIL', m); if (!c) process.exitCode = 1 }
 
 const a = await runAnalysis({ url, team: 'Team A' }, () => {})
-// weights: zero everything but homemade -> overall equals homemade
-const only = Object.fromEntries(Object.keys(R.defaultWeights()).map((k) => [k, k === 'homemade' ? 1 : 0]))
+// weights: zero everything but wagonmade -> overall equals wagonmade
+const only = Object.fromEntries(Object.keys(R.defaultWeights()).map((k) => [k, k === 'wagonmade' ? 1 : 0]))
 const w = R.withWeights(a, only)
-ok(w.overall.score === a.homemade.score, `weights: overall ${w.overall.score} == homemade ${a.homemade.score}`)
+ok(w.overall.score === a.wagonmade.score, `weights: overall ${w.overall.score} == wagonmade ${a.wagonmade.score}`)
 ok(R.withWeights(a, R.defaultWeights()) === a, 'default weights leave the report untouched')
 
 // rerun one category and swap it in

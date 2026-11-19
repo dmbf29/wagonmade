@@ -1,6 +1,6 @@
 // History lives in localStorage (no database). Reports are small: only findings, never the code.
 
-const KEY = 'homemade:reports:v1'
+const KEY = 'wagonmade:reports:v1'
 
 export function loadReports() {
   try {
@@ -39,14 +39,14 @@ export function lastReportForRepo(owner, name) {
 }
 
 export function exportJson(reports) {
-  return JSON.stringify({ app: 'homemade', version: 1, exportedAt: new Date().toISOString(), reports }, null, 2)
+  return JSON.stringify({ app: 'wagonmade', version: 1, exportedAt: new Date().toISOString(), reports }, null, 2)
 }
 
 export function parseImport(text) {
   let json
   try { json = JSON.parse(text) } catch { throw new Error("That file isn't valid JSON.") }
   const reports = Array.isArray(json?.reports) ? json.reports : json?.categories ? [json] : null
-  if (!reports) throw new Error("That file doesn't look like a Homemade export.")
+  if (!reports) throw new Error("That file doesn't look like a Wagonmade export.")
   const ok = reports.filter((r) => r && r.key && Array.isArray(r.categories) && r.repo)
   if (!ok.length) throw new Error('No reports found in that file.')
   return ok
@@ -69,7 +69,7 @@ export function download(filename, text, type = 'application/json') {
 }
 
 // Teacher's category weights (Phase 2). Only used to compute "Overall"; saved reports are never changed.
-const WEIGHTS_KEY = 'homemade:weights:v1'
+const WEIGHTS_KEY = 'wagonmade:weights:v1'
 
 export function loadWeights() {
   try {

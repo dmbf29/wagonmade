@@ -1,6 +1,7 @@
 // Turns fetch data + category results into one saved "report" object.
 
 import { CATEGORIES, CATEGORY_BY_ID, gradeFor } from '../../shared/config.js'
+import { sameFinding } from './split.js'
 
 export function reportKey(data) {
   const base = `${data.owner}/${data.repo}`.toLowerCase()
@@ -34,10 +35,13 @@ export function pickMissions(categories, count = 3, weights) {
     }
   }
   all.sort((a, b) => b.rank - a.rank)
+  // the same problem is often found by several categories: keep only the best-ranked one
+  const distinct = []
+  for (const m of all) if (!distinct.some((d) => sameFinding(d, m))) distinct.push(m)
   const picked = []
   const seen = new Set()
-  for (const m of all) if (picked.length < count && !seen.has(m.categoryId)) { picked.push(m); seen.add(m.categoryId) }
-  for (const m of all) if (picked.length < count && !picked.includes(m)) picked.push(m)
+  for (const m of distinct) if (picked.length < count && !seen.has(m.categoryId)) { picked.push(m); seen.add(m.categoryId) }
+  for (const m of distinct) if (picked.length < count && !picked.includes(m)) picked.push(m)
   return picked
 }
 
@@ -55,10 +59,10 @@ export function toCategory(def, r = { error: 'No answer' }) {
 // Everything that is derived from the categories (so it can be redone after a single re-run)
 function summarize(categories) {
   const score = overallScore(categories)
-  const homemade = categories.find((c) => c.id === 'homemade')
+  const wagonmade = categories.find((c) => c.id === 'wagonmade')
   return {
     overall: score == null ? null : { score, grade: gradeFor(score) },
-    homemade: homemade && homemade.score != null ? { score: homemade.score, grade: homemade.grade } : null,
+    wagonmade: wagonmade && wagonmade.score != null ? { score: wagonmade.score, grade: wagonmade.grade } : null,
     categories,
     missions: pickMissions(categories),
     removedTotal: categories.reduce((n, c) => n + (c.removed || 0), 0),
@@ -91,7 +95,7 @@ export function buildReport({ data, team, checks, results, tookMs }) {
   const categories = CATEGORIES.map((def) => toCategory(def, results.find((x) => x.category === def.id)))
   const sum = summarize(categories)
   return {
-    app: 'homemade', version: 1,
+    app: 'wagonmade', version: 1,
     key: reportKey(data),
     createdAt: new Date().toISOString(),
     team: (team || '').trim(),
@@ -99,6 +103,7 @@ export function buildReport({ data, team, checks, results, tookMs }) {
     repo: { owner: data.owner, name: data.repo, url: data.htmlUrl, sha: data.sha, branch: data.branch },
     pr: data.pr ? { number: data.pr.number, title: data.pr.title, url: data.pr.url } : null,
     versions: checks.versions,
+    quickChecks: (checks.checks || []).map((c) => ({ id: c.id, severity: c.severity, text: c.ticker(c.count), count: c.count })),
     ...sum,
     skipped: { tooLarge: (data.skipped?.tooLarge || []).length, templateStylesheets: data.stylesheetTemplate?.identical || 0 },
     tookSeconds: Math.round(tookMs / 1000),
@@ -146,6 +151,6 @@ export function diffReports(prev, cur) {
     for (const w of c.wins) if (!oldWins.has(norm(w.title))) newWins.push({ ...w, categoryName: c.name })
   }
   const delta = cur.overall && prev.overall ? cur.overall.score - prev.overall.score : null
-  const homemadeDelta = cur.homemade && prev.homemade ? cur.homemade.score - prev.homemade.score : null
-  return { delta, homemadeDelta, categories, resolved, added, newWins, sameCode: prev.repo.sha === cur.repo.sha }
+  const wagonmadeDelta = cur.wagonmade && prev.wagonmade ? cur.wagonmade.score - prev.wagonmade.score : null
+  return { delta, wagonmadeDelta, categories, resolved, added, newWins, sameCode: prev.repo.sha === cur.repo.sha }
 }

@@ -35,7 +35,7 @@ export function githubHeaders(extra = {}) {
   const h = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
-    'User-Agent': 'homemade-code-check',
+    'User-Agent': 'wagonmade-code-check',
     ...extra,
   }
   if (process.env.GITHUB_TOKEN) h.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`

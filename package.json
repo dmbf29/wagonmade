@@ -1,9 +1,9 @@
 {
-  "name": "homemade",
+  "name": "wagonmade",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Homemade: a friendly code-check report card for Le Wagon student Rails projects",
+  "description": "Wagonmade: a friendly code-check report card for Le Wagon student Rails projects",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

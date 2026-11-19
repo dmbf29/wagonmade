@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Homemade · one config file to rule them all.
+// Wagonmade · one config file to rule them all.
 //
 // Edit this file to change: category names and weights, grade thresholds,
 // which files each category looks at, and the "house style" the AI is told
@@ -54,9 +54,9 @@ export const LIMITS = {
 // checks  : which deterministic checks (shared/checks.js) are passed along as facts
 export const CATEGORIES = [
   {
-    id: 'homemade',
-    name: 'Homemade Score',
-    tagline: 'How much it sounds like you',
+    id: 'wagonmade',
+    name: 'Wagonmade Score',
+    tagline: 'How well it fits what we learned, and your own app',
     weight: 3,
     kind: 'code',
     headline: true,

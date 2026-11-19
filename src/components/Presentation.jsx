@@ -39,7 +39,7 @@ export default function Presentation({ report, onExit }) {
             <p className="eyebrow">Report card</p>
             <h1>{displayName(report)}</h1>
             <div className="present-grades">
-              {report.homemade && <div><p className="eyebrow">Sounds like you</p><span className={`grade grade-xl grade-${report.homemade.grade.toLowerCase()}`}>{report.homemade.grade}</span><p className="present-score">{report.homemade.score}</p></div>}
+              {report.wagonmade && <div><p className="eyebrow">Sounds like you</p><span className={`grade grade-xl grade-${report.wagonmade.grade.toLowerCase()}`}>{report.wagonmade.grade}</span><p className="present-score">{report.wagonmade.score}</p></div>}
               {report.overall && <div><p className="eyebrow">Overall</p><span className={`grade grade-xl grade-${report.overall.grade.toLowerCase()}`}>{report.overall.grade}</span><p className="present-score">{report.overall.score}</p></div>}
             </div>
           </div>

@@ -12,9 +12,9 @@ const EVIDENCE = (e) => {
 
 export function toMarkdown(r) {
   const out = []
-  out.push(`# 🧰 Homemade report card: ${displayName(r)}`)
+  out.push(`# 🧰 Wagonmade report card: ${displayName(r)}`)
   out.push(`${r.mode === 'pr' ? `Pull request [#${r.pr.number} ${r.pr.title}](${r.pr.url}) in ` : ''}[${r.repo.owner}/${r.repo.name}](${r.repo.url}) · commit \`${r.repo.sha.slice(0, 7)}\``)
-  if (r.overall) out.push(`\n**Overall: ${r.overall.grade} (${r.overall.score}/100)**${r.homemade ? ` · **How much it sounds like you: ${r.homemade.grade} (${r.homemade.score}/100)**` : ''}`)
+  if (r.overall) out.push(`\n**Overall: ${r.overall.grade} (${r.overall.score}/100)**${r.wagonmade ? ` · **How well it fits what we learned: ${r.wagonmade.grade} (${r.wagonmade.score}/100)**` : ''}`)
   out.push('\n| Category | Grade | Score |\n|---|---|---|')
   for (const c of r.categories) out.push(`| ${c.name} | ${c.error ? '–' : c.grade} | ${c.score ?? '–'} |`)
 
@@ -34,10 +34,14 @@ export function toMarkdown(r) {
       }
     }
   }
+  if (r.quickChecks?.length) {
+    out.push('\n## 🔎 What the quick checks noticed')
+    for (const q of r.quickChecks) out.push(`- ${q.text}`)
+  }
   if (r.missions.length) {
     out.push('\n## 🎯 Your 3 missions for the final project')
     r.missions.forEach((m, i) => out.push(`${i + 1}. **${m.title}**: ${m.mission}`))
   }
-  out.push('\n_Made with Homemade: your own knowledge is enough, trust it._')
+  out.push('\n_Made with Wagonmade: your own knowledge is enough, trust it._')
   return out.join('\n')
 }

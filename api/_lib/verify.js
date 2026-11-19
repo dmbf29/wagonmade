@@ -60,10 +60,19 @@ export function verifyEvidence(ev, filesByPath, { tolerance = 3 } = {}) {
 }
 
 // For the Git category: the "evidence" is a fact, so it must appear in the facts text.
+// The model often rewords a fact ("12 merged PRs") instead of copying it, so an exact match would drop
+// every Git finding. Accept it when every number in it exists in the facts and most of its words do too.
 export function verifyFact(ev, factsText) {
   const snippet = norm(String(ev?.snippet || ''))
   if (!snippet) return { ok: false }
-  return norm(factsText).includes(snippet) ? { ok: true, evidence: { file: '', startLine: 0, endLine: 0, snippet: String(ev.snippet).trim() } } : { ok: false }
+  const facts = norm(factsText).toLowerCase()
+  const keep = { ok: true, evidence: { file: '', startLine: 0, endLine: 0, snippet: String(ev.snippet).trim() } }
+  if (facts.includes(snippet.toLowerCase())) return keep
+  const numbers = snippet.match(/\d+/g) || []
+  const words = (snippet.toLowerCase().match(/[a-z_\-/]{4,}/g) || [])
+  if (!words.length) return { ok: false }
+  const found = words.filter((w) => facts.includes(w)).length / words.length
+  return numbers.every((n) => facts.includes(n)) && found >= 0.6 ? keep : { ok: false }
 }
 
 export function blobUrl({ owner, repo, sha }, path, start, end) {

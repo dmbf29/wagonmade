@@ -122,14 +122,14 @@ export default function App() {
       {view === 'report' && report && !pair && (
         <ReportView report={shown} animate={animate} copied={copied} weights={weights} onWeights={changeWeights} onResetWeights={resetWeights}
           diff={diff} prev={prev} onOpen={open} onRerun={rerun} rerunning={rerunning} rerunError={rerunError} onPresent={() => setPresenting(true)} onCopy={copy}
-          onExport={() => download(`homemade-${slug(report)}.json`, exportJson([report]))} />
+          onExport={() => download(`wagonmade-${slug(report)}.json`, exportJson([report]))} />
       )}
       {pair && <Compare a={pair[0]} b={pair[1]} weights={weights} onBack={() => setPair(null)} onOpen={open} />}
       {presenting && report && <Presentation report={shown} onExit={() => setPresenting(false)} />}
       {historyOpen && (
         <History reports={saved} message={historyMsg} onOpen={open} onCompare={(a, b) => { setHistoryOpen(false); setPair([a, b]); setView('report'); window.scrollTo(0, 0) }} onClose={() => setHistoryOpen(false)}
           onDelete={(k) => setSaved(deleteReport(k))} onImport={onImport}
-          onExportAll={() => download(`homemade-reports-${new Date().toISOString().slice(0, 10)}.json`, exportJson(saved))} />
+          onExportAll={() => download(`wagonmade-reports-${new Date().toISOString().slice(0, 10)}.json`, exportJson(saved))} />
       )}
     </>
   )

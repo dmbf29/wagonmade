@@ -18,7 +18,7 @@ const { default: Presentation } = await vite.ssrLoadModule('/src/components/Pres
 const events = []
 const report = await runAnalysis({ url, team: 'Team Test' }, (e) => events.push(e))
 console.log('events:', events.map((e) => e.type + (e.id ? `:${e.id}:${e.status}` : '')).join(' ').slice(0, 400))
-console.log('overall', report.overall, 'homemade', report.homemade, 'removed', report.removedTotal, 'missions', report.missions.length)
+console.log('overall', report.overall, 'wagonmade', report.wagonmade, 'removed', report.removedTotal, 'missions', report.missions.length)
 console.log(report.categories.map((c) => `${c.id}=${c.error ? 'ERR ' + c.error : c.applicable ? c.grade + '/' + c.score : 'N/A'}`).join('  '))
 const html = renderToString(React.createElement(ReportView, { report, animate: false }))
 console.log('ReportView html bytes:', html.length)

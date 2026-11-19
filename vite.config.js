@@ -17,7 +17,7 @@ function localApi() {
     }
   }
   return {
-    name: 'homemade-local-api',
+    name: 'wagonmade-local-api',
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const name = (req.url || '').match(/^\/api\/([\w-]+)/)?.[1]

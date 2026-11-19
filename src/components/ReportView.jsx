@@ -8,7 +8,7 @@ import CategoryCard, { GradeBadge, LevelUp, PlaceholderCard } from './CategoryCa
 
 function Hero({ report, animate }) {
   const overall = useCountUp(report.overall?.score ?? 0, { enabled: animate, delay: 300 })
-  const homemade = useCountUp(report.homemade?.score ?? 0, { enabled: animate, delay: 900, duration: 1800 })
+  const wagonmade = useCountUp(report.wagonmade?.score ?? 0, { enabled: animate, delay: 900, duration: 1800 })
   return (
     <section className={`hero ${animate ? 'animate' : ''}`}>
       <div className="hero-id">
@@ -22,18 +22,18 @@ function Hero({ report, animate }) {
         )}
       </div>
       <div className="hero-scores">
-        {report.homemade && (
-          <div className="score-panel score-homemade">
-            <p className="eyebrow">Homemade Score · how much this sounds like you</p>
+        {report.wagonmade && (
+          <div className="score-panel score-wagonmade">
+            <p className="eyebrow">Wagonmade Score · how well it fits what we learned</p>
             <div className="score-row">
-              <span className="big-number">{homemade}</span>
-              <span className="stamp-wrap"><span className={`stamp grade grade-${report.homemade.grade.toLowerCase()}`}>{report.homemade.grade}</span></span>
+              <span className="big-number">{wagonmade}</span>
+              <span className="stamp-wrap"><span className={`stamp grade grade-${report.wagonmade.grade.toLowerCase()}`}>{report.wagonmade.grade}</span></span>
             </div>
           </div>
         )}
         {report.overall && (
           <div className="score-panel">
-            <p className="eyebrow">Overall</p>
+            <p className="eyebrow">Overall · average of all {report.categories.filter((c) => c.applicable && !c.error).length} categories</p>
             <div className="score-row">
               <span className="big-number small">{overall}</span>
               <GradeBadge grade={report.overall.grade} size="lg" />
@@ -96,6 +96,13 @@ export default function ReportView({ report, live, animate, onPresent, onCopy, o
         })}
       </div>
       {!running && <Missions missions={report.missions} />}
+      {!running && report.quickChecks?.length > 0 && (
+        <details className="card quickchecks">
+          <summary>🔎 What the quick checks noticed ({report.quickChecks.length})</summary>
+          <p className="muted small">Plain code checks that run before the AI. The AI sees these as facts, and decides how much each one matters.</p>
+          <ul>{report.quickChecks.map((q) => <li key={q.id} className={`qc qc-${q.severity}`}>{q.text}</li>)}</ul>
+        </details>
+      )}
       {!running && (report.removedTotal > 0 || report.skipped.tooLarge > 0) && (
         <p className="muted small footnote">
           {report.removedTotal > 0 && <>{report.removedTotal} unverifiable finding{report.removedTotal > 1 ? 's' : ''} removed. </>}

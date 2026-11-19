@@ -1,6 +1,7 @@
 // Prompt pieces shared by every category. Edit the tone and rules here.
 
 import { HOUSE_STYLE } from '../../shared/config.js'
+import { COURSE_TEXT } from '../../shared/curriculum.js'
 
 export const TONE = `
 You are the friendly code coach for Le Wagon, a coding bootcamp. Students just pitched their one-week Rails project and you are writing their "report card", which the teacher shows on a projector to the whole class.
@@ -27,6 +28,10 @@ RULES FOR FINDINGS:
 - Never judge versions by assumption: use the versions listed from Gemfile.lock. Bootstrap 5 is assumed whatever the minor version.
 - confidence: "high" = you can see it clearly in the quoted code; "medium" = very likely; "low" = a hunch worth a second look. Be honest: a wrong finding is worse than a missing one.
 - impact (1-5): how much fixing this helps the final project. 5 = changes how the whole app works, 1 = polish.
+- ONE issue per level-up. The quoted evidence must show that very issue. Never bundle several problems into one item and never cite lines that are about something else.
+- Only claim what you can see in the provided files. Do not say code is "tested" or "well-tested" unless test files are shown. Do not say a method is public or private unless the quoted lines show it. Do not invent facts.
+- "concept" is chosen from the fixed list of lectures above (the answer format only allows those). Pick the lecture where they met the idea. Never suggest something from the "NOT taught yet" list.
+- Do not repeat the same point as both a win and a level-up, and do not list two wins that say the same thing in different words.
 - "mission" is one encouraging imperative sentence aimed at the final project ("Next time, reach for a Stimulus controller before writing a script tag.").
 - "example" is a 1-3 line snippet showing the way we learned it (valid for their stack). Leave it as an empty string if a snippet would not help.
 - "concept" is the short name of the course lesson or concept they already know (e.g. "resources (Router lecture)", "Stimulus targets", "SCSS color variables").
@@ -46,9 +51,27 @@ The "verdict" is ONE warm, specific sentence (max 25 words) that the teacher can
 export function buildSystemPrompt(categoryName, criteria) {
   return [
     TONE,
-    `THE HOUSE STYLE (what students were taught):\n${HOUSE_STYLE}`,
+    `THE HOUSE STYLE (what students were taught):\n${HOUSE_STYLE}\n\n${COURSE_TEXT}`,
     `YOUR CATEGORY: ${categoryName}\n${criteria}`,
     RULES,
+    SCORING,
+  ].join('\n\n')
+}
+
+// Big categories are split: several "part" calls each read some of the files, then one small
+// "summary" call scores the verified findings. These two pieces are what makes that work.
+export const PART_NOTE = (i, n) => `YOU ARE READING PART ${i} OF ${n} of the files for this category; other reviewers read the rest at the same time. Report only what you can see in YOUR files, and only your best findings (fewer is fine, nothing is required). Do NOT write a score or a verdict: that is done afterwards from everyone's findings. Do not say "in this part" in the text; write as if talking about the whole app.`
+
+export function buildPartPrompt(categoryName, criteria, i, n) {
+  return [buildSystemPrompt(categoryName, criteria), PART_NOTE(i, n)].join('\n\n')
+}
+
+export function buildSummaryPrompt(categoryName, criteria) {
+  return [
+    TONE,
+    `THE HOUSE STYLE (what students were taught):\n${HOUSE_STYLE}\n\n${COURSE_TEXT}`,
+    `YOUR CATEGORY: ${categoryName}\n${criteria}`,
+    `YOUR JOB: reviewers already read ALL the code of this category and produced the verified findings below (wins and level-ups, plus exact automated facts). You see no code. Give ONE score and ONE verdict for the whole category, based on those findings and facts only. Do not invent anything that is not in them. Findings that were dropped for lack of evidence are not listed and do not count.`,
     SCORING,
   ].join('\n\n')
 }

@@ -243,7 +243,7 @@ export function runChecks(allFiles, meta = {}) {
   // ── FRONT-END ──────────────────────────────────────────────────────────────
   const tw = classHits(files, TAILWIND_TOKEN)
   add({
-    id: 'tailwind-classes', categories: ['frontend', 'homemade'], severity: 'issue',
+    id: 'tailwind-classes', categories: ['frontend', 'wagonmade'], severity: 'issue',
     title: 'Tailwind-style classes (this app uses Bootstrap 5)',
     ticker: (n) => `Found ${n} Tailwind-looking class lists…`,
     locations: tw, count: tw.length,
@@ -254,7 +254,7 @@ export function runChecks(allFiles, meta = {}) {
   const oldBsAttrs = scan(views, /./, /\bdata-(toggle|target|dismiss|ride|slide|parent|spy|placement|trigger)\s*=/)
   const oldBsAll = [...oldBs, ...oldBsAttrs]
   add({
-    id: 'old-bootstrap', categories: ['frontend', 'javascript', 'homemade'], severity: 'issue',
+    id: 'old-bootstrap', categories: ['frontend', 'javascript', 'wagonmade'], severity: 'issue',
     title: 'Bootstrap 3/4 classes or attributes (this app uses Bootstrap 5)',
     ticker: (n) => `Spotted ${n} Bootstrap 4-style classes or attributes…`,
     locations: oldBsAll, count: oldBsAll.length,
@@ -266,7 +266,7 @@ export function runChecks(allFiles, meta = {}) {
   const inlineAll = inline.filter((h) => !kitBackground(h))
   const inlineStatic = inlineAll.filter((h) => !/<%/.test(h.snippet))
   add({
-    id: 'inline-styles', categories: ['frontend', 'homemade'], severity: inlineStatic.length >= 3 ? 'issue' : 'note',
+    id: 'inline-styles', categories: ['frontend', 'wagonmade'], severity: inlineStatic.length >= 3 ? 'issue' : 'note',
     title: `Inline style="…" attributes (${inlineStatic.length} static, ${inlineAll.length - inlineStatic.length} dynamic)`,
     ticker: (n) => `${n} inline styles in your views…`,
     locations: inlineStatic.length ? inlineStatic : inlineAll, count: inlineAll.length,
@@ -290,7 +290,7 @@ export function runChecks(allFiles, meta = {}) {
     filter: (line) => !/^\s*@import|url\(/.test(line) && /[:,(]\s*#[0-9a-fA-F]{3,8}\b/.test(line),
   })
   add({
-    id: 'hex-in-scss', categories: ['frontend', 'homemade'], severity: 'issue',
+    id: 'hex-in-scss', categories: ['frontend', 'wagonmade'], severity: 'issue',
     title: 'Hex colors in SCSS outside config/_colors.scss (use the $color variables)',
     ticker: (n) => `${n} hard-coded hex colors outside _colors.scss…`, locations: hexScss,
   })
@@ -321,7 +321,7 @@ export function runChecks(allFiles, meta = {}) {
     }
   }
   add({
-    id: 'unimported-partials', categories: ['frontend', 'homemade'], severity: 'issue',
+    id: 'unimported-partials', categories: ['frontend', 'wagonmade'], severity: 'issue',
     title: 'SCSS partials that are not imported in their _index.scss (so they have no effect)',
     ticker: (n) => `${n} SCSS files never imported…`, locations: unimported,
   })
@@ -353,7 +353,7 @@ export function runChecks(allFiles, meta = {}) {
   const formWith = scan(views, /\.erb$/, /<%=?\s*(form_with|form_tag|form_for)\b/)
   const simpleForm = scan(views, /\.erb$/, /<%=?\s*simple_form_for\b/)
   add({
-    id: 'form-with', categories: ['frontend', 'rails', 'homemade'], severity: 'issue',
+    id: 'form-with', categories: ['frontend', 'rails', 'wagonmade'], severity: 'issue',
     title: `form_with / form_tag instead of simple_form_for (${formWith.length} vs ${simpleForm.length} simple_form_for)`,
     ticker: (n) => `${n} forms not using simple_form…`, locations: formWith,
   })
@@ -364,7 +364,7 @@ export function runChecks(allFiles, meta = {}) {
   // ── JAVASCRIPT / HOTWIRE ───────────────────────────────────────────────────
   const scriptTags = scan(views, /\.erb$/, /<script\b/i, { filter: (l) => !/type\s*=\s*["']importmap/.test(l) })
   add({
-    id: 'script-tags', categories: ['javascript', 'homemade'], severity: 'issue',
+    id: 'script-tags', categories: ['javascript', 'wagonmade'], severity: 'issue',
     title: '<script> tags inside views (use a Stimulus controller)', ticker: (n) => `${n} <script> tags in views…`, locations: scriptTags,
   })
   const inlineHandlers = scan(views, /\.erb$/, /\son(click|change|submit|input|keyup|load)\s*=\s*["']/i)
@@ -375,12 +375,12 @@ export function runChecks(allFiles, meta = {}) {
   const nonStimulusJs = jsFiles.filter((f) => !/^app\/javascript\/controllers\//.test(f.path))
   const domReady = scan(nonStimulusJs, /./, /DOMContentLoaded|turbo:load|turbolinks:load|\$\(document\)\.ready/, { skipComments: true })
   add({
-    id: 'dom-ready', categories: ['javascript', 'homemade'], severity: 'issue',
+    id: 'dom-ready', categories: ['javascript', 'wagonmade'], severity: 'issue',
     title: 'DOMContentLoaded / page-load handlers (Stimulus connect() replaces these)', ticker: (n) => `${n} page-load handlers outside Stimulus…`, locations: domReady,
   })
   const domQueries = scan(nonStimulusJs, /./, /document\.(querySelector|getElementById|querySelectorAll|getElementsBy)/, { skipComments: true })
   add({
-    id: 'dom-queries', categories: ['javascript', 'homemade'], severity: 'issue',
+    id: 'dom-queries', categories: ['javascript', 'wagonmade'], severity: 'issue',
     title: 'DOM querying logic outside a Stimulus controller', ticker: (n) => `${n} document.querySelector calls outside Stimulus…`, locations: domQueries,
   })
   const jq = [
@@ -388,7 +388,7 @@ export function runChecks(allFiles, meta = {}) {
     ...scan(views, /\.erb$/, /\$\(["'`#.]|jQuery/),
   ]
   add({
-    id: 'jquery', categories: ['javascript', 'homemade'], severity: 'issue',
+    id: 'jquery', categories: ['javascript', 'wagonmade'], severity: 'issue',
     title: 'jQuery usage (this app uses Stimulus)', ticker: (n) => `${n} jQuery calls…`, locations: jq,
   })
   const turbolinks = [
@@ -439,12 +439,12 @@ export function runChecks(allFiles, meta = {}) {
   const used = usedStimulusNames(allFiles)
   const unusedStimulus = stimulusNames.filter((x) => !used.has(x.name)).map((x) => ({ path: x.f.path, line: 1, snippet: `${x.name} is never used with data-controller`, whole: true }))
   add({
-    id: 'unused-stimulus', categories: ['javascript', 'homemade'], severity: 'note',
+    id: 'unused-stimulus', categories: ['javascript', 'wagonmade'], severity: 'note',
     title: 'Stimulus controllers never connected to a view', ticker: (n) => `${n} Stimulus controllers not used in any view…`, locations: unusedStimulus,
   })
   const consoleLogs = scan(jsFiles, /./, /\bconsole\.(log|debug)\(/, { skipComments: true })
   add({
-    id: 'console-log', categories: ['homemade'], severity: 'note',
+    id: 'console-log', categories: ['wagonmade'], severity: 'note',
     title: 'Leftover console.log', ticker: (n) => `${n} console.log calls…`, locations: consoleLogs,
   })
 
@@ -457,7 +457,7 @@ export function runChecks(allFiles, meta = {}) {
   // ── RAILS WAY ──────────────────────────────────────────────────────────────
   const routes = analyseRoutes(allFiles.find((f) => f.path === 'config/routes.rb'))
   add({
-    id: 'custom-routes', categories: ['rails', 'homemade'], severity: routes.custom.length >= 3 ? 'issue' : 'note',
+    id: 'custom-routes', categories: ['rails', 'wagonmade'], severity: routes.custom.length >= 3 ? 'issue' : 'note',
     title: `Custom get/post routes outside resources (${routes.resources} resources lines in routes.rb)`,
     ticker: (n) => `Found ${n} custom routes…`, locations: routes.custom,
   })
@@ -482,7 +482,7 @@ export function runChecks(allFiles, meta = {}) {
     title: 'Public controller actions outside the 7 RESTful ones', ticker: (n) => `${n} non-RESTful controller actions…`, locations: nonRest,
   })
   add({
-    id: 'long-actions', categories: ['rails', 'homemade'], severity: 'issue',
+    id: 'long-actions', categories: ['rails', 'wagonmade'], severity: 'issue',
     title: 'Long controller actions (over 15 lines)', ticker: (n) => `${n} long controller actions…`, locations: longActions,
   })
 
@@ -506,7 +506,7 @@ export function runChecks(allFiles, meta = {}) {
   })
   const viewQueries = scan(views, /\.erb$/, /<%[=-]?[^%]*\b[A-Z][a-zA-Z]+\.(where|find|find_by|all|order|count|first|last|joins|includes)\b/)
   add({
-    id: 'queries-in-views', categories: ['rails', 'homemade'], severity: 'issue',
+    id: 'queries-in-views', categories: ['rails', 'wagonmade'], severity: 'issue',
     title: 'Database queries written inside views', ticker: (n) => `${n} database queries inside views…`, locations: viewQueries,
   })
 
@@ -546,7 +546,7 @@ export function runChecks(allFiles, meta = {}) {
   const hasOpenAIGem = ['ruby-openai', 'openai', 'ruby_openai', 'anthropic'].some((g) => gems.has(g))
   if (hasOpenAIGem) rawOpenAI.push({ path: 'Gemfile.lock', line: 1, snippet: `Gemfile.lock includes ${['ruby-openai', 'openai', 'ruby_openai', 'anthropic'].filter((g) => gems.has(g)).join(', ')}`, whole: true })
   add({
-    id: 'raw-llm-client', categories: ['ai', 'homemade'], severity: 'issue',
+    id: 'raw-llm-client', categories: ['ai', 'wagonmade'], severity: 'issue',
     title: 'Talking to an AI provider without ruby_llm (ruby-openai / OpenAI::Client / raw HTTP)', ticker: (n) => `${n} AI calls not going through ruby_llm…`, locations: rawOpenAI,
   })
 
@@ -575,6 +575,16 @@ export function runChecks(allFiles, meta = {}) {
   })
 
   // ── SECURITY & HYGIENE ─────────────────────────────────────────────────────
+  // Model.find(params[:id]) on a model that belongs to a user: any signed-in user can open someone else's record
+  const userOwned = models.filter((m) => /^\s*belongs_to\s+:user\b/m.test(m.content)).map((m) => m.path.match(/([^/]+)\.rb$/)[1].split('_').map((w) => w[0].toUpperCase() + w.slice(1)).join(''))
+  const unscopedFind = userOwned.length && devise
+    ? scan(files, /^app\/controllers\/.+_controller\.rb$/, new RegExp(`\\b(${userOwned.join('|')})\\.(find|find_by!?|find_by_id)\\(\\s*(params|id:)`), { skipComments: true })
+    : []
+  add({
+    id: 'unscoped-find', categories: ['security', 'rails'], severity: 'issue',
+    title: 'Records that belong to a user are found with Model.find(params[...]) instead of current_user.things.find(...): any signed-in user could open or change them',
+    ticker: (n) => `${n} records looked up without current_user scoping…`, locations: unscopedFind,
+  })
   const committedEnv = paths.filter((p) => /^(\.env(\..+)?|config\/master\.key|config\/credentials\/.+\.key)$/.test(p) && !/\.(example|sample|template)$/.test(p))
   add({
     id: 'secret-files', categories: ['security', 'ai'], severity: 'issue',
@@ -601,29 +611,29 @@ export function runChecks(allFiles, meta = {}) {
     ...scan(files, /^app\/.*\.rb$/, /^\s*p\s+[\w@"':]/, { skipComments: true }),
   ]
   add({
-    id: 'debug-leftovers', categories: ['homemade', 'security'], severity: 'note',
+    id: 'debug-leftovers', categories: ['wagonmade', 'security'], severity: 'note',
     title: 'Leftover debugging (puts / binding.irb / byebug)', ticker: (n) => `${n} leftover debug lines…`, locations: debugLeft,
   })
 
-  // ── HOMEMADE signals ───────────────────────────────────────────────────────
+  // ── WAGONMADE signals ───────────────────────────────────────────────────────
   const explainer = scan(appCode, /./, /^\s*(#|\/\/|<%#)\s*(Step\s*\d+|This (method|function|action|controller|class|model|file|code|view)\b|Initialize|Define the|Set up|Create a new|Loop through|Handle the|Here we|We (will|are going to)|Make sure)/i)
   add({
-    id: 'explainer-comments', categories: ['homemade'], severity: 'note',
+    id: 'explainer-comments', categories: ['wagonmade'], severity: 'note',
     title: 'Tutorial-style explainer comments ("Step 1", "This method…")', ticker: (n) => `${n} tutorial-sounding comments…`, locations: explainer,
   })
   const commentedCode = scan(appCode, /./, /^\s*(#|\/\/)\s*(def |end\s*$|render\b|redirect_to\b|before_action\b|@\w+ =|const |function |import )/)
   add({
-    id: 'commented-code', categories: ['homemade'], severity: 'note',
+    id: 'commented-code', categories: ['wagonmade'], severity: 'note',
     title: 'Commented-out code', ticker: (n) => `${n} commented-out code lines…`, locations: commentedCode,
   })
   const placeholder = scan(files, /^app\/views\/.*\.erb$|^README\.md$/i, /lorem ipsum|your (text|title|content) here|welcome to my app|sample text|placeholder text|todo:|fixme/i)
   add({
-    id: 'placeholder-copy', categories: ['homemade'], severity: 'note',
+    id: 'placeholder-copy', categories: ['wagonmade'], severity: 'note',
     title: 'Placeholder copy (Lorem ipsum / "your text here")', ticker: (n) => `${n} placeholder texts…`, locations: placeholder,
   })
   const mixedTemplates = files.filter((f) => /^app\/views\/.*\.(haml|slim|jbuilder)$/.test(f.path) && !/\.jbuilder$/.test(f.path))
   add({
-    id: 'mixed-template-languages', categories: ['homemade', 'frontend'], severity: 'issue',
+    id: 'mixed-template-languages', categories: ['wagonmade', 'frontend'], severity: 'issue',
     title: 'Views written in HAML/Slim (the course uses ERB)', ticker: (n) => `${n} HAML/Slim views…`,
     locations: mixedTemplates.map((f) => ({ path: f.path, line: 1, snippet: f.path, whole: true })),
   })
@@ -644,7 +654,7 @@ export function runChecks(allFiles, meta = {}) {
     }
   }
   add({
-    id: 'dead-views', categories: ['homemade', 'rails'], severity: 'note',
+    id: 'dead-views', categories: ['wagonmade', 'rails'], severity: 'note',
     title: 'Views with no matching controller or action', ticker: (n) => `${n} views nobody renders…`, locations: deadViews,
   })
   const allViewControllerText = files.filter((f) => /^app\/(views|controllers|helpers)\//.test(f.path))
@@ -657,7 +667,7 @@ export function runChecks(allFiles, meta = {}) {
     if (!referenced) unusedPartials.push({ path: v.path, line: 1, snippet: `partial _${name} is never rendered`, whole: true })
   }
   add({
-    id: 'unused-partials', categories: ['homemade'], severity: 'note',
+    id: 'unused-partials', categories: ['wagonmade'], severity: 'note',
     title: 'Partials that nothing renders', ticker: (n) => `${n} partials never rendered…`, locations: unusedPartials,
   })
 
@@ -708,11 +718,17 @@ export function limitChecksToPR(result, files) {
 export function factsForCategory(result, category) {
   const wanted = category.checks.includes('*') ? null : category.checks
   const rows = result.checks.filter((c) => !wanted || c.categories.some((x) => wanted.includes(x)))
-  if (!rows.length) return 'No automated findings for this category.'
-  return rows
+  const notes = []
+  if (category.id === 'ai_assets' || category.id === 'security') {
+    notes.push(result.stats.hasUploads
+      ? 'UPLOADS: this app DOES attach files (Active Storage attachments or file fields).'
+      : 'UPLOADS: this app has NO uploads (no has_one_attached / has_many_attached / file fields). Do NOT mention Cloudinary, Active Storage or storage.yml.')
+  }
+  if (!rows.length) return [...notes, 'No automated findings for this category.'].join('\n')
+  return [...notes, ...rows
     .map((c) => {
       const locs = c.locations.slice(0, 6).map((l) => `    - ${l.path}:${l.line}  ${l.snippet}`).join('\n')
       return `* [${c.severity}] ${c.title} — ${c.count} found${c.detail ? ` (e.g. ${c.detail})` : ''}\n${locs}`
-    })
+    })]
     .join('\n')
 }

@@ -49,14 +49,15 @@ export default function CategoryCard({ cat, index, open, onToggle, headline, onR
   return (
     <article className={`card cat ${open ? 'is-open' : ''} ${na ? 'is-na' : ''} ${headline ? 'is-headline' : ''}`} style={{ '--i': index }}>
       <button className="cat-head" onClick={onToggle} aria-expanded={open} disabled={failed}>
-        <GradeBadge grade={failed ? '?' : cat.grade} />
+        {/* the headline category's score is already big in the banner: don't repeat it here */}
+        {!(headline && !failed) && <GradeBadge grade={failed ? '?' : cat.grade} />}
         <span className="cat-text">
-          <span className="cat-name">{cat.name}</span>
-          <span className="cat-tagline">{cat.tagline}</span>
+          <span className="cat-name">{headline && !failed ? "What's behind your Wagonmade score" : cat.name}</span>
+          <span className="cat-tagline">{headline && !failed ? 'Wins and next steps for how well the app fits what we learned' : cat.tagline}</span>
         </span>
-        {!na && !failed && <span className="cat-score">{cat.score}</span>}
+        {!na && !failed && !headline && <span className="cat-score">{cat.score}</span>}
       </button>
-      {!na && !failed && <div className="bar" role="presentation"><span className={`bar-fill bar-${cat.grade.toLowerCase()}`} style={{ width: `${cat.score}%` }} /></div>}
+      {!na && !failed && !headline && <div className="bar" role="presentation"><span className={`bar-fill bar-${cat.grade.toLowerCase()}`} style={{ width: `${cat.score}%` }} /></div>}
       <p className="cat-verdict">{failed ? `We couldn't finish this one: ${cat.error}` : cat.verdict}</p>
 
       {onRerun && (failed || (open && !na)) && (

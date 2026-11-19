@@ -2,6 +2,7 @@
 // Set MOCK_LLM=1 to skip the network (see analyze-core.js for the fake answer).
 
 import { DEFAULT_OPENAI_MODEL } from '../../shared/config.js'
+import { CONCEPTS } from '../../shared/curriculum.js'
 import { HttpError } from './github.js'
 
 export const modelName = () => process.env.OPENAI_MODEL || DEFAULT_OPENAI_MODEL
@@ -47,7 +48,7 @@ export const REPORT_SCHEMA = {
           properties: {
             title: { type: 'string' },
             why: { type: 'string' },
-            concept: { type: 'string' },
+            concept: { type: 'string', enum: CONCEPTS }, // closed list: no invented lectures
             confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
             impact: { type: 'integer' },
             mission: { type: 'string' },
@@ -60,17 +61,29 @@ export const REPORT_SCHEMA = {
   },
 }
 
-async function callOnce(system, user) {
+// Split runs: parts only report findings; a small last call scores them (no code in it)
+const without = (keys) => ({
+  ...REPORT_SCHEMA.schema,
+  required: REPORT_SCHEMA.schema.required.filter((k) => !keys.includes(k)),
+  properties: Object.fromEntries(Object.entries(REPORT_SCHEMA.schema.properties).filter(([k]) => !keys.includes(k))),
+})
+export const FINDINGS_SCHEMA = { name: 'category_findings', strict: true, schema: without(['applicable', 'score', 'verdict']) }
+export const SUMMARY_SCHEMA = { name: 'category_summary', strict: true, schema: without(['applicable', 'wins', 'level_ups']) }
+
+async function callOnce(system, user, schema) {
   const key = process.env.OPENAI_API_KEY
   if (!key) throw new HttpError(500, 'OPENAI_API_KEY is not set on the server.', 'Add it in Vercel > Settings > Environment Variables (or in .env for local dev).')
 
   const body = {
     model: modelName(),
     messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-    response_format: { type: 'json_schema', json_schema: REPORT_SCHEMA },
+    response_format: { type: 'json_schema', json_schema: schema },
     max_completion_tokens: 12000,
   }
-  if (process.env.OPENAI_REASONING_EFFORT) body.reasoning_effort = process.env.OPENAI_REASONING_EFFORT
+  // Reasoning models (gpt-5*, o-series) think for a long time on big categories and hit the 60s limit.
+  // Default to "low" for them; set OPENAI_REASONING_EFFORT (low | medium | high) to override.
+  const effort = process.env.OPENAI_REASONING_EFFORT || (/^(gpt-5|o\d)/.test(body.model) ? 'low' : '')
+  if (effort) body.reasoning_effort = effort
 
   const ctl = new AbortController()
   const timer = setTimeout(() => ctl.abort(), 52000)
@@ -105,12 +118,12 @@ async function callOnce(system, user) {
   }
 }
 
-export async function askModel(system, user) {
+export async function askModel(system, user, schema = REPORT_SCHEMA) {
   try {
-    return await callOnce(system, user)
+    return await callOnce(system, user, schema)
   } catch (err) {
     if (!err.retry) throw err
     await new Promise((r) => setTimeout(r, 1500))
-    return callOnce(system, user)
+    return callOnce(system, user, schema)
   }
 }

@@ -1,6 +1,6 @@
-// Criteria for the headline score. Edit this text to change what "homemade" means.
+// Criteria for the headline score. Edit this text to change what "wagonmade" means.
 export default `
-HOMEMADE SCORE: "how much does this code sound like YOU (this team, writing this app)?"
+WAGONMADE SCORE: "how much does this code sound like YOU (this team, writing this app)?"
 This is the headline score. You are looking for code that feels written by one team for one app, in the style they learned, rather than imported from somewhere else.
 
 Look for:
@@ -11,6 +11,7 @@ Look for:
 - Comments: "explainer" comments typical of a tutorial ("Step 1: initialize…", "This method handles…") versus comments that sound like a student making notes. Teaching comments in class repos are normal (minor at most).
 - Generic placeholder copy ("Welcome to our app", Lorem ipsum, generic button labels) versus copy that sounds like the team's idea.
 - Logic in views that belongs in the model or controller.
+Beyond the course: this is a bootcamp. When the code uses techniques clearly beyond what the house style teaches (e.g. Three.js, a Web Speech API, MutationObserver, ActiveRecord locking, database transactions, concerns or service objects that carry real logic, background jobs, Pundit policies). RubyLLM tools, Turbo Streams, ActionCable streaming, multi-modal file messages and Nokogiri parsing WERE taught: they are on-course, not "beyond", say so as a WIN titled "Beyond the course: <what>" and end the detail with "Be ready to explain how it works to the class." Celebrate it, never suspect it, never say it was copied or generated. This is not a penalty: advanced code that fits the rest of the app and that the team can explain is a strength. If the same advanced code is inconsistent with the rest of the app (different style, different naming), that inconsistency is the level-up, not the advanced idea.
 Wins to look for: a consistent voice, reuse of their own partials/components, naming that matches their domain, small focused code, personality in the copy.
 In pull-request mode: judge whether THIS PR matches the rest of the app (naming, styles, colors, patterns). Example: "this PR adds a new red #ff0000 but your app's red is $red".
 `.trim()

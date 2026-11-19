@@ -9,5 +9,6 @@ Look for:
 - Icons from font-awesome-sass (fa-solid fa-…), not a CDN.
 - Visual consistency across pages: do views use the same containers, spacing helpers, button styles, card markup? Do similar things look the same?
 - In pull-request mode: does the PR use the colors, fonts and components the app already defines (see config/_colors.scss, _fonts.scss and components/)?
+Inline style="" attributes whose value is computed in ERB (a width in %, a CSS custom property like --h) are a legitimate way to pass one number to CSS. They are at most a low-confidence, impact-1 note, never a headline level-up. Static inline styles (style="color: red") are the real issue.
 Do not judge visual taste, only consistency with the course stack and with the rest of their app.
 `.trim()

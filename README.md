@@ -1,4 +1,4 @@
-# Homemade
+# Wagonmade
 
 A friendly code-check report card for Le Wagon student Rails projects. Paste a GitHub repo or pull request URL and get grades, wins, level-ups with real code evidence, and three missions for the final project.
 
@@ -67,6 +67,12 @@ The browser does the orchestration so no single function has to do everything.
 - **History** (top right): reopen any past report instantly. **Export all** and **Import** move reports between computers, so prepare the night before and import them on the classroom machine. Reports store findings only, never the code.
 - **Copy as Markdown** pastes a report into a GitHub issue or PR.
 - If a run fails, the error screen offers the last saved report for that repo.
+
+## Big categories are read in parts
+
+When a category's files add up to more than ~45k characters (`SPLIT` in `src/lib/split.js`), the browser cuts them into 2-3 balanced parts and sends one "findings" call per part, in parallel. Each part is verified against its own files. Then the best 3 wins and 3 level-ups are merged and one small "summary" call (no code in it) writes the score and verdict. This keeps every call well under the 60 s limit. Small categories still use a single call.
+
+The quick-check list is saved in each report (`quickChecks`) and shown under the missions, in Markdown and in the export.
 
 ## Phase 2 features
 
