@@ -11,9 +11,18 @@ export const FORCED = [
     check: 'tailwind-classes', covers: /tailwind|utility[- ]class/i, category: 'frontend', impact: 5,
     title: 'Tailwind-style classes in a Bootstrap app',
     concept: 'Rails assets: Bootstrap SCSS, color variables, asset pipeline',
-    why: (n) => `${n} class lists look like Tailwind (utility classes such as flex, px-4, text-gray-600). This course stack is Bootstrap 5 plus your own SCSS, so these won't be styled the way you expect and make the app look like two different projects.`,
+    why: (n) => `Tailwind shows up ${n} time${n > 1 ? 's' : ''} in this app (its install, its CDN script, or class lists like px-4, text-gray-600, grid-cols-3). This course stack is Bootstrap 5 plus your own SCSS, so Tailwind classes won't be styled the way you expect and make the app look like two different projects.`,
     mission: 'Next time, build the layout with Bootstrap classes and components you already know (d-flex, px-3, btn btn-primary, card).',
     example: '<div class="d-flex justify-content-between px-3">\n  <a class="btn btn-primary">Save</a>\n</div>',
+  },
+  {
+    check: 'layout-imports', covers: /\bcdn\b|application\.html|layouts?\b|external (script|stylesheet|librar)|<link|<script/i, category: 'frontend',
+    impact: (n, check) => (/tailwind|bootstrap|jquery/i.test(check?.detail || '') ? 4 : 3),
+    title: 'Libraries loaded straight in the layout',
+    concept: 'Rails assets: Bootstrap SCSS, color variables, asset pipeline',
+    why: (n, check) => `application.html.erb loads ${n} external ${n > 1 ? 'files' : 'file'} (${check?.detail || 'script or stylesheet tags'}). In this course the libraries come in through the setup we built: Bootstrap through SCSS, JavaScript through importmap, fonts in config/_fonts.scss, icons with font-awesome-sass. A second copy in the layout can clash with them.`,
+    mission: 'Next time, add a library the course way: pin it with importmap, or import it in your SCSS, instead of pasting a tag into the layout.',
+    example: '# config/importmap.rb\npin "tom-select", to: "https://ga.jspm.io/npm:tom-select@2.3.1/dist/js/tom-select.complete.js"\n\n// app/javascript/application.js\nimport "tom-select"',
   },
   {
     check: 'old-bootstrap', covers: /bootstrap ?[34]|pull-(left|right)|data-toggle|\b(ml|mr|pl|pr)-\d/i, category: 'frontend', impact: 4,
@@ -100,8 +109,8 @@ export function forcedLevelUps(categoryId, checks, files, repoRef) {
     const n = check.count ?? check.locations.length
     const loc = check.locations.find((l) => !l.whole) || check.locations[0]
     out.push({
-      title: rule.title, why: rule.why(n), concept: rule.concept, mission: rule.mission, example: rule.example,
-      confidence: 'high', impact: typeof rule.impact === 'function' ? rule.impact(n) : rule.impact,
+      title: rule.title, why: rule.why(n, check), concept: rule.concept, mission: rule.mission, example: rule.example,
+      confidence: 'high', impact: typeof rule.impact === 'function' ? rule.impact(n, check) : rule.impact,
       relocated: false, forced: true, evidence: evidenceFor(loc, files, repoRef, rule.secret),
     })
   }

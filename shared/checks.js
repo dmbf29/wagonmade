@@ -59,7 +59,7 @@ const TAILWIND_TOKEN = new RegExp(
   '^(?:(?:sm|md|lg|xl|2xl|hover|focus|dark|active|disabled|group-hover):)?(?:' +
     [
       'flex|grid|hidden|block|inline-block|inline-flex|inline-grid|relative|absolute|fixed|sticky',
-      'flex-(?:col|row|wrap|1|auto|none|grow|shrink)',
+      'flex-(?:col|1|auto|none|grow|shrink)', // flex-row / flex-wrap exist in Bootstrap 5 too
       'items-(?:center|start|end|baseline|stretch)',
       'justify-(?:center|between|around|evenly|start|end)',
       'self-(?:center|start|end|stretch)',
@@ -82,9 +82,9 @@ const TAILWIND_TOKEN = new RegExp(
       'transition(?:-all|-colors|-opacity|-transform)?',
       'duration-\\d+|ease-(?:in|out|in-out|linear)',
       'z-(?:10|20|30|40|50)',
-      'opacity-\\d+',
+      'opacity-(?!0$|25$|50$|75$|100$)\\d+', // 0/25/50/75/100 are Bootstrap 5
       'object-(?:cover|contain)',
-      'overflow-(?:hidden|auto|scroll)-?[xy]?',
+      'overflow-[xy]-(?:hidden|auto|scroll)', // overflow-hidden/auto/scroll exist in Bootstrap 5
     ].join('|') +
     ')$',
 )
@@ -127,14 +127,17 @@ function classStrings(line) {
   return out
 }
 
-function classHits(files, tokenRe, pathRe = /^app\/(views|helpers|javascript)\//) {
+// Tokens that are unmistakably Tailwind (not a word a student would also use as their own class)
+const TAILWIND_STRONG = /(?:-(?:gray|slate|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}$)|grid-cols-|col-span-|space-[xy]-|^(?:sm|md|lg|xl|2xl|hover|focus|dark):|^(?:items|justify|self)-|^text-(?:xs|sm|base|lg|[x\d]+xl)$|^(?:min-h|min-w|max-w)-|^flex-(?:col|1|auto|none)$|^-?[mp][xytblr]?-(?:[6-9]|\d{2,})$/
+
+function classHits(files, tokenRe, pathRe = /^app\/(views|helpers|javascript)\//, { accept = (bad) => bad.length > 0, own = new Set() } = {}) {
   const hits = []
   for (const f of files) {
     if (!pathRe.test(f.path)) continue
     splitLines(f.content).forEach((line, i) => {
       for (const str of classStrings(line)) {
-        const bad = str.split(/\s+/).filter((t) => t && tokenRe.test(t))
-        if (bad.length) {
+        const bad = str.split(/\s+/).filter((t) => t && tokenRe.test(t) && !own.has(t.replace(/^[a-z0-9]+:/, '')))
+        if (accept(bad)) {
           hits.push({ path: f.path, line: i + 1, snippet: trimSnippet(line), tokens: bad.slice(0, 6) })
           break
         }
@@ -241,13 +244,40 @@ export function runChecks(allFiles, meta = {}) {
   const appCode = files.filter((f) => /^app\/.*\.(rb|erb|js)$/.test(f.path))
 
   // ── FRONT-END ──────────────────────────────────────────────────────────────
-  const tw = classHits(files, TAILWIND_TOKEN)
+  // classes the students define in THEIR OWN stylesheets are theirs, never "Tailwind"
+  const ownClasses = new Set()
+  for (const f of scss) for (const m of f.content.matchAll(/\.(-?[A-Za-z_][\w-]*)/g)) ownClasses.add(m[1])
+  // a list needs 2+ Tailwind-looking classes, or one unmistakable one (text-gray-600, grid-cols-3, items-center...)
+  const twClassLists = classHits(files, TAILWIND_TOKEN, undefined, { own: ownClasses, accept: (bad) => bad.length >= 2 || bad.some((t) => TAILWIND_STRONG.test(t)) })
+  // structure that proves Tailwind is installed, whatever the classes look like
+  const lockFile = files.find((f) => f.path === 'Gemfile.lock')
+  const twStructure = [
+    ...scan(lockFile ? [lockFile] : [], /./, /^ {4}(tailwindcss-rails|tailwindcss-ruby|tailwindcss-[a-z-]+) \(/),
+    ...scan(files, /^app\/views\/layouts\//, /cdn\.tailwindcss\.com|@tailwindcss\/browser|tailwindcss[^"']*\.(js|css)/i),
+    ...scan(files, /\.(css|scss)$/, /^\s*@(tailwind\b|import\s+["']tailwindcss|config\s+["'].*tailwind)/),
+    ...paths.filter((p) => /(^|\/)tailwind\.config\.js$|application\.tailwind\.css$/.test(p)).map((p) => ({ path: p, line: 1, snippet: p, whole: true })),
+  ]
+  const tw = [...twStructure, ...twClassLists]
   add({
     id: 'tailwind-classes', categories: ['frontend'], severity: 'issue',
     title: 'Tailwind-style classes (this app uses Bootstrap 5)',
     ticker: (n) => `Found ${n} Tailwind-looking class lists…`,
     locations: tw, count: tw.length,
-    detail: tw.slice(0, 5).map((h) => h.tokens.join(' ')).join(' | '),
+    detail: tw.slice(0, 5).map((h) => (h.tokens ? h.tokens.join(' ') : h.snippet)).join(' | '),
+  })
+
+  // Libraries pulled straight into the layout (application.html.erb) instead of the course setup
+  // (SCSS imports for Bootstrap, importmap pins for JS, font-awesome-sass, config/_fonts.scss).
+  // Fonts and Font Awesome have their own checks; extra scripts are caught by 'cdn-imports' outside layouts.
+  const layoutImports = scan(files, /^app\/views\/layouts\/.*\.erb$/, /(?:<script\b[^>]*\bsrc\s*=|<link\b[^>]*\bhref\s*=|(?:javascript_include_tag|stylesheet_link_tag)\b)[^>]*["']https?:\/\/(?!fonts\.(?:googleapis|gstatic)\.com)/i, {
+    filter: (line) => !/rel\s*=\s*["'](?:preconnect|dns-prefetch|icon|apple-touch-icon|manifest)/i.test(line) && !/font-?awesome|fontawesome/i.test(line),
+  })
+  const layoutLib = layoutImports.find((h) => /tailwind|bootstrap|jquery|popper|bulma|foundation/i.test(h.snippet))
+  add({
+    id: 'layout-imports', categories: ['frontend', 'javascript'], severity: 'issue',
+    title: 'Libraries or stylesheets loaded straight in the layout (application.html.erb) instead of the course setup',
+    ticker: (n) => `${n} extra imports in the layout…`, locations: layoutImports, count: layoutImports.length,
+    detail: layoutLib ? `including ${layoutLib.snippet.slice(0, 90)}` : layoutImports.slice(0, 2).map((h) => h.snippet.slice(0, 90)).join(' | '),
   })
 
   const oldBs = classHits(files, OLD_BOOTSTRAP_TOKEN)
@@ -401,7 +431,7 @@ export function runChecks(allFiles, meta = {}) {
   })
   const cdnImports = [
     ...scan(jsFiles, /./, /(?:import\b[^;]*from\s*|import\s*\()\s*["']https?:\/\//),
-    ...scan(views, /\.erb$/, /<script[^>]+src\s*=\s*["']https?:\/\//i),
+    ...scan(views, /^app\/views\/(?!layouts\/).*\.erb$/, /<script[^>]+src\s*=\s*["']https?:\/\//i),
   ]
   add({
     id: 'cdn-imports', categories: ['javascript'], severity: 'issue',
