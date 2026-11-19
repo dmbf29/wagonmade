@@ -1,0 +1,23 @@
+{
+  "name": "homemade",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Homemade: a friendly code-check report card for Le Wagon student Rails projects",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check:repos": "node scripts/check-repos.js"
+  },
+  "engines": { "node": ">=20" },
+  "dependencies": {
+    "highlight.js": "^11.10.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^5.4.11"
+  }
+}
