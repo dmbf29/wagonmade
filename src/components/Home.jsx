@@ -15,7 +15,10 @@ export default function Home({ onSubmit, error, lastSaved, onOpenSaved }) {
   return (
     <main className="home">
       <h1 className="home-title">Let's see what <em>you</em> built.</h1>
-      <p className="home-lede">Paste a GitHub repo or pull request. We'll look for what's working, and pick a few things to try next time.</p>
+      <span className="home-lede">
+        <p>Paste a GitHub repo or pull request.</p>
+        <p>We'll look for what's working, and pick a few things to try next time.</p>
+      </span>
       <form className="home-form" onSubmit={submit}>
         <label className="sr-only" htmlFor="url">GitHub repository or pull request URL</label>
         <input id="url" className="input input-xl" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://github.com/owner/repo" autoFocus spellCheck="false" autoComplete="off" />

@@ -96,9 +96,11 @@ em { color: var(--tonic); font-style: normal; }
 .input-xl { font-size: 1.4rem; padding: 20px 24px; width: 100%; border-radius: var(--radius); }
 
 /* ── home ── */
-.home { max-width: 860px; margin: 0 auto; padding: 6vh 24px 60px; text-align: center; }
-.home-title { font-size: clamp(2.4rem, 6vw, 4.4rem); font-weight: 900; letter-spacing: -0.03em; }
+.home { max-width: 860px; margin: 0 auto; padding: 6vh 24px 60px; text-align: center; container-type: inline-size; }
+/* text is ~11.1em wide in Nunito 900; 8.9cqi ≈ 100% of .home's content width. Retune if the copy changes. */
+.home-title { font-size: 8.9cqi; white-space: nowrap; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 12px; }
 .home-lede { font-size: 1.2rem; color: var(--black-80); margin: 16px auto 32px; max-width: 34em; }
+.home-lede p:first-child { margin-bottom: 0; }
 .home-form { display: grid; gap: 14px; }
 .home-row { display: flex; gap: 14px; }
 .home-row .input { flex: 1; }
