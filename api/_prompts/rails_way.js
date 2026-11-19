@@ -10,4 +10,5 @@ Look for:
 - Names: singular models, plural controllers and tables, conventional file names.
 Wins to look for: clean nested resources, tidy private methods, scopes, validations, current_user scoping.
 In pull-request mode, check that new routes/controllers/models follow the same conventions as the existing app.
+Who-can-open-what questions (scoping records to current_user, Model.find(params[:id])) belong to the Security card: do not report them here.
 `.trim()

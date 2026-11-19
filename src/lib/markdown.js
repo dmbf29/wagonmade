@@ -14,7 +14,7 @@ export function toMarkdown(r) {
   const out = []
   out.push(`# 🧰 Wagonmade report card: ${displayName(r)}`)
   out.push(`${r.mode === 'pr' ? `Pull request [#${r.pr.number} ${r.pr.title}](${r.pr.url}) in ` : ''}[${r.repo.owner}/${r.repo.name}](${r.repo.url}) · commit \`${r.repo.sha.slice(0, 7)}\``)
-  if (r.overall) out.push(`\n**Overall: ${r.overall.grade} (${r.overall.score}/100)**${r.wagonmade ? ` · **How well it fits what we learned: ${r.wagonmade.grade} (${r.wagonmade.score}/100)**` : ''}`)
+  if (r.overall) out.push(`\n**Wagonmade Score: ${r.overall.grade} (${r.overall.score}/100)**`)
   out.push('\n| Category | Grade | Score |\n|---|---|---|')
   for (const c of r.categories) out.push(`| ${c.name} | ${c.error ? '–' : c.grade} | ${c.score ?? '–'} |`)
 
@@ -24,6 +24,10 @@ export function toMarkdown(r) {
     if (c.wins.length) {
       out.push('\n### 🌟 Wins')
       for (const w of c.wins) out.push(`- **${w.title}**: ${w.detail}`)
+    }
+    if (c.explainThis?.length) {
+      out.push('\n### 🎓 Make sure you can explain these')
+      for (const x of c.explainThis) out.push(`- **${x.title}**: ${x.question}\n\n  ${EVIDENCE(x.evidence).replace(/\n/g, '\n  ')}`)
     }
     const ups = c.levelUps.filter((l) => l.confidence !== 'low')
     if (ups.length) {

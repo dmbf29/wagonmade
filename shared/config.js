@@ -55,12 +55,11 @@ export const LIMITS = {
 export const CATEGORIES = [
   {
     id: 'wagonmade',
-    name: 'Wagonmade Score',
-    tagline: 'How well it fits what we learned, and your own app',
+    name: 'Your Own Voice',
+    tagline: 'One team, one style, in what we learned',
     weight: 3,
     kind: 'code',
-    headline: true,
-    checks: ['*'], // sees every deterministic fact
+    checks: ['wagonmade'], // only the voice-type facts (dead code, tutorial comments...): the topical checks belong to their own card
     files: [
       /^README\.md$/i,
       /^app\/controllers\/.*\.rb$/,

@@ -133,6 +133,7 @@ em { color: var(--tonic); font-style: normal; }
 .hero-sub { margin-top: 10px; }
 .hero-scores { display: grid; gap: 16px; }
 .score-panel { background: rgba(255, 255, 255, 0.08); border-radius: var(--radius); padding: 20px 28px; }
+.score-note { margin: 14px 0 0; font-size: 0.9rem; color: var(--black-60); }
 .score-wagonmade { background: var(--white); color: var(--black); }
 .score-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .big-number { font-family: var(--font-head); font-weight: 900; font-size: clamp(4rem, 9vw, 7rem); line-height: 1; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
@@ -156,10 +157,10 @@ em { color: var(--tonic); font-style: normal; }
 .grade-na, .grade-pending, .grade-\? { background: var(--black-20); color: var(--black-80); }
 
 /* ── category cards ── */
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 20px; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.grid > .card, .cat, .cat-body, .findings > li, .evidence { min-width: 0; } /* one column: every category has the same weight */
 .card { background: var(--white); border-radius: var(--radius); padding: 22px 24px; box-shadow: var(--shadow); animation: rise 0.55s both; animation-delay: calc(var(--i, 0) * 60ms); }
 .cat.is-open { grid-column: 1 / -1; }
-.cat.is-headline { border: 3px solid var(--tonic-40); grid-column: 1 / -1; } /* headline card spans the grid: 1 + 6 cards = no orphan */
 .cat.is-na { background: var(--cream); box-shadow: none; }
 .cat-head { display: flex; align-items: center; gap: 16px; width: 100%; background: none; border: 0; padding: 0; text-align: left; }
 .cat-head:disabled { cursor: default; }
@@ -273,7 +274,6 @@ body.is-presenting { overflow: hidden; }
   .present-grades { gap: 32px; }
 }
 @media (max-width: 480px) {
-  .grid { grid-template-columns: 1fr; }
   .stamp { width: 5rem; height: 5rem; font-size: 3rem; }
 }
 
@@ -308,6 +308,8 @@ body.is-presenting { overflow: hidden; }
 .compare-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: var(--tonic-20); border-radius: var(--radius-sm); padding: 8px 12px; margin: 12px 0; }
 @media (max-width: 600px) { .weights li { grid-template-columns: 1fr; gap: 4px; } .change-cats li { grid-template-columns: 1fr auto auto; } }
 
+.explain-item { background: var(--tonic-20); border-radius: var(--radius-sm); padding: 16px 18px; }
+.explain-q { font-family: var(--font-head); font-weight: 700; font-size: 1.05rem; color: var(--dark-purple); margin: 8px 0; }
 .quickchecks { margin-top: 24px; }
 .quickchecks summary { cursor: pointer; font-family: var(--font-head); font-weight: 800; font-size: 1.1rem; }
 .quickchecks ul { columns: 2 320px; padding-left: 1.2em; margin: 12px 0 0; }

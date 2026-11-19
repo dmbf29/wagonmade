@@ -17,7 +17,7 @@ export default function Changes({ diff, prev, onOpenPrev }) {
       {diff.sameCode && <p className="muted small">Same version of the code, so differences come from re-running the check.</p>}
       {nothing && <p>Nothing moved. Same story as last time.</p>}
       {diff.delta != null && diff.delta !== 0 && (
-        <p className="change-headline">Overall <strong className={diff.delta > 0 ? 'up' : 'down'}>{sign(diff.delta)}</strong> points{diff.delta > 0 ? ' 🎉' : ''}</p>
+        <p className="change-headline">Wagonmade Score <strong className={diff.delta > 0 ? 'up' : 'down'}>{sign(diff.delta)}</strong> points{diff.delta > 0 ? ' 🎉' : ''}</p>
       )}
       {moved.length > 0 && (
         <ul className="change-cats">

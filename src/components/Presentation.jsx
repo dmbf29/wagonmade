@@ -39,8 +39,7 @@ export default function Presentation({ report, onExit }) {
             <p className="eyebrow">Report card</p>
             <h1>{displayName(report)}</h1>
             <div className="present-grades">
-              {report.wagonmade && <div><p className="eyebrow">Sounds like you</p><span className={`grade grade-xl grade-${report.wagonmade.grade.toLowerCase()}`}>{report.wagonmade.grade}</span><p className="present-score">{report.wagonmade.score}</p></div>}
-              {report.overall && <div><p className="eyebrow">Overall</p><span className={`grade grade-xl grade-${report.overall.grade.toLowerCase()}`}>{report.overall.grade}</span><p className="present-score">{report.overall.score}</p></div>}
+              {report.overall && <div><p className="eyebrow">Wagonmade Score</p><span className={`grade grade-xl grade-${report.overall.grade.toLowerCase()}`}>{report.overall.grade}</span><p className="present-score">{report.overall.score}</p></div>}
             </div>
           </div>
         )}
@@ -54,6 +53,9 @@ export default function Presentation({ report, onExit }) {
                 <section><h2>🌟 Wins</h2>{c.wins.length ? c.wins.map((w, k) => <div key={k} className="present-item"><h3>{w.title}</h3><p>{w.detail}</p>{code && <Evidence evidence={w.evidence} />}</div>) : <p className="muted">Keep building!</p>}</section>
                 <section><h2>🚀 Level-ups</h2>{ups.length ? ups.map((l, k) => <div key={k} className="present-item"><h3>{l.title}</h3><p>{l.why}</p><p className="concept">You already know: <strong>{l.concept}</strong></p>{code && <><Evidence evidence={l.evidence} />{l.example && <Code code={l.example} label="The way we learned it" file={l.evidence?.file} />}</>}</div>) : <p className="muted">Nothing to level-up here.</p>}</section>
               </div>
+              {c.explainThis?.length > 0 && (
+                <section className="present-explain"><h2>🎓 Be ready to explain</h2>{c.explainThis.map((x, k) => <div key={k} className="present-item"><h3>{x.title}</h3><p className="explain-q">{x.question}</p>{code && <Evidence evidence={x.evidence} />}</div>)}</section>
+              )}
             </div>
           )
         })()}

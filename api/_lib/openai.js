@@ -68,6 +68,19 @@ const without = (keys) => ({
   properties: Object.fromEntries(Object.entries(REPORT_SCHEMA.schema.properties).filter(([k]) => !keys.includes(k))),
 })
 export const FINDINGS_SCHEMA = { name: 'category_findings', strict: true, schema: without(['applicable', 'score', 'verdict']) }
+// Only the "Your Own Voice" category also lists code to be ready to explain
+const explainItem = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['title', 'what_it_does', 'question', 'evidence'],
+  properties: { title: { type: 'string' }, what_it_does: { type: 'string' }, question: { type: 'string' }, evidence: evidenceSchema },
+}
+const withExplain = (s, name) => ({
+  name, strict: true,
+  schema: { ...s.schema, required: [...s.schema.required, 'explain_this'], properties: { ...s.schema.properties, explain_this: { type: 'array', items: explainItem } } },
+})
+export const REPORT_SCHEMA_EXPLAIN = withExplain(REPORT_SCHEMA, 'category_report_explain')
+export const FINDINGS_SCHEMA_EXPLAIN = withExplain(FINDINGS_SCHEMA, 'category_findings_explain')
 export const SUMMARY_SCHEMA = { name: 'category_summary', strict: true, schema: without(['applicable', 'wins', 'level_ups']) }
 
 async function callOnce(system, user, schema) {

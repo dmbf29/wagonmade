@@ -243,7 +243,7 @@ export function runChecks(allFiles, meta = {}) {
   // ── FRONT-END ──────────────────────────────────────────────────────────────
   const tw = classHits(files, TAILWIND_TOKEN)
   add({
-    id: 'tailwind-classes', categories: ['frontend', 'wagonmade'], severity: 'issue',
+    id: 'tailwind-classes', categories: ['frontend'], severity: 'issue',
     title: 'Tailwind-style classes (this app uses Bootstrap 5)',
     ticker: (n) => `Found ${n} Tailwind-looking class lists…`,
     locations: tw, count: tw.length,
@@ -254,7 +254,7 @@ export function runChecks(allFiles, meta = {}) {
   const oldBsAttrs = scan(views, /./, /\bdata-(toggle|target|dismiss|ride|slide|parent|spy|placement|trigger)\s*=/)
   const oldBsAll = [...oldBs, ...oldBsAttrs]
   add({
-    id: 'old-bootstrap', categories: ['frontend', 'javascript', 'wagonmade'], severity: 'issue',
+    id: 'old-bootstrap', categories: ['frontend', 'javascript'], severity: 'issue',
     title: 'Bootstrap 3/4 classes or attributes (this app uses Bootstrap 5)',
     ticker: (n) => `Spotted ${n} Bootstrap 4-style classes or attributes…`,
     locations: oldBsAll, count: oldBsAll.length,
@@ -266,7 +266,7 @@ export function runChecks(allFiles, meta = {}) {
   const inlineAll = inline.filter((h) => !kitBackground(h))
   const inlineStatic = inlineAll.filter((h) => !/<%/.test(h.snippet))
   add({
-    id: 'inline-styles', categories: ['frontend', 'wagonmade'], severity: inlineStatic.length >= 3 ? 'issue' : 'note',
+    id: 'inline-styles', categories: ['frontend'], severity: inlineStatic.length >= 3 ? 'issue' : 'note',
     title: `Inline style="…" attributes (${inlineStatic.length} static, ${inlineAll.length - inlineStatic.length} dynamic)`,
     ticker: (n) => `${n} inline styles in your views…`,
     locations: inlineStatic.length ? inlineStatic : inlineAll, count: inlineAll.length,
@@ -290,7 +290,7 @@ export function runChecks(allFiles, meta = {}) {
     filter: (line) => !/^\s*@import|url\(/.test(line) && /[:,(]\s*#[0-9a-fA-F]{3,8}\b/.test(line),
   })
   add({
-    id: 'hex-in-scss', categories: ['frontend', 'wagonmade'], severity: 'issue',
+    id: 'hex-in-scss', categories: ['frontend'], severity: 'issue',
     title: 'Hex colors in SCSS outside config/_colors.scss (use the $color variables)',
     ticker: (n) => `${n} hard-coded hex colors outside _colors.scss…`, locations: hexScss,
   })
@@ -353,7 +353,7 @@ export function runChecks(allFiles, meta = {}) {
   const formWith = scan(views, /\.erb$/, /<%=?\s*(form_with|form_tag|form_for)\b/)
   const simpleForm = scan(views, /\.erb$/, /<%=?\s*simple_form_for\b/)
   add({
-    id: 'form-with', categories: ['frontend', 'rails', 'wagonmade'], severity: 'issue',
+    id: 'form-with', categories: ['frontend', 'rails'], severity: 'issue',
     title: `form_with / form_tag instead of simple_form_for (${formWith.length} vs ${simpleForm.length} simple_form_for)`,
     ticker: (n) => `${n} forms not using simple_form…`, locations: formWith,
   })
@@ -364,7 +364,7 @@ export function runChecks(allFiles, meta = {}) {
   // ── JAVASCRIPT / HOTWIRE ───────────────────────────────────────────────────
   const scriptTags = scan(views, /\.erb$/, /<script\b/i, { filter: (l) => !/type\s*=\s*["']importmap/.test(l) })
   add({
-    id: 'script-tags', categories: ['javascript', 'wagonmade'], severity: 'issue',
+    id: 'script-tags', categories: ['javascript'], severity: 'issue',
     title: '<script> tags inside views (use a Stimulus controller)', ticker: (n) => `${n} <script> tags in views…`, locations: scriptTags,
   })
   const inlineHandlers = scan(views, /\.erb$/, /\son(click|change|submit|input|keyup|load)\s*=\s*["']/i)
@@ -375,12 +375,12 @@ export function runChecks(allFiles, meta = {}) {
   const nonStimulusJs = jsFiles.filter((f) => !/^app\/javascript\/controllers\//.test(f.path))
   const domReady = scan(nonStimulusJs, /./, /DOMContentLoaded|turbo:load|turbolinks:load|\$\(document\)\.ready/, { skipComments: true })
   add({
-    id: 'dom-ready', categories: ['javascript', 'wagonmade'], severity: 'issue',
+    id: 'dom-ready', categories: ['javascript'], severity: 'issue',
     title: 'DOMContentLoaded / page-load handlers (Stimulus connect() replaces these)', ticker: (n) => `${n} page-load handlers outside Stimulus…`, locations: domReady,
   })
   const domQueries = scan(nonStimulusJs, /./, /document\.(querySelector|getElementById|querySelectorAll|getElementsBy)/, { skipComments: true })
   add({
-    id: 'dom-queries', categories: ['javascript', 'wagonmade'], severity: 'issue',
+    id: 'dom-queries', categories: ['javascript'], severity: 'issue',
     title: 'DOM querying logic outside a Stimulus controller', ticker: (n) => `${n} document.querySelector calls outside Stimulus…`, locations: domQueries,
   })
   const jq = [
@@ -388,7 +388,7 @@ export function runChecks(allFiles, meta = {}) {
     ...scan(views, /\.erb$/, /\$\(["'`#.]|jQuery/),
   ]
   add({
-    id: 'jquery', categories: ['javascript', 'wagonmade'], severity: 'issue',
+    id: 'jquery', categories: ['javascript'], severity: 'issue',
     title: 'jQuery usage (this app uses Stimulus)', ticker: (n) => `${n} jQuery calls…`, locations: jq,
   })
   const turbolinks = [
@@ -457,7 +457,7 @@ export function runChecks(allFiles, meta = {}) {
   // ── RAILS WAY ──────────────────────────────────────────────────────────────
   const routes = analyseRoutes(allFiles.find((f) => f.path === 'config/routes.rb'))
   add({
-    id: 'custom-routes', categories: ['rails', 'wagonmade'], severity: routes.custom.length >= 3 ? 'issue' : 'note',
+    id: 'custom-routes', categories: ['rails'], severity: routes.custom.length >= 3 ? 'issue' : 'note',
     title: `Custom get/post routes outside resources (${routes.resources} resources lines in routes.rb)`,
     ticker: (n) => `Found ${n} custom routes…`, locations: routes.custom,
   })
@@ -482,7 +482,7 @@ export function runChecks(allFiles, meta = {}) {
     title: 'Public controller actions outside the 7 RESTful ones', ticker: (n) => `${n} non-RESTful controller actions…`, locations: nonRest,
   })
   add({
-    id: 'long-actions', categories: ['rails', 'wagonmade'], severity: 'issue',
+    id: 'long-actions', categories: ['rails'], severity: 'issue',
     title: 'Long controller actions (over 15 lines)', ticker: (n) => `${n} long controller actions…`, locations: longActions,
   })
 
@@ -506,7 +506,7 @@ export function runChecks(allFiles, meta = {}) {
   })
   const viewQueries = scan(views, /\.erb$/, /<%[=-]?[^%]*\b[A-Z][a-zA-Z]+\.(where|find|find_by|all|order|count|first|last|joins|includes)\b/)
   add({
-    id: 'queries-in-views', categories: ['rails', 'wagonmade'], severity: 'issue',
+    id: 'queries-in-views', categories: ['rails'], severity: 'issue',
     title: 'Database queries written inside views', ticker: (n) => `${n} database queries inside views…`, locations: viewQueries,
   })
 
@@ -546,7 +546,7 @@ export function runChecks(allFiles, meta = {}) {
   const hasOpenAIGem = ['ruby-openai', 'openai', 'ruby_openai', 'anthropic'].some((g) => gems.has(g))
   if (hasOpenAIGem) rawOpenAI.push({ path: 'Gemfile.lock', line: 1, snippet: `Gemfile.lock includes ${['ruby-openai', 'openai', 'ruby_openai', 'anthropic'].filter((g) => gems.has(g)).join(', ')}`, whole: true })
   add({
-    id: 'raw-llm-client', categories: ['ai', 'wagonmade'], severity: 'issue',
+    id: 'raw-llm-client', categories: ['ai'], severity: 'issue',
     title: 'Talking to an AI provider without ruby_llm (ruby-openai / OpenAI::Client / raw HTTP)', ticker: (n) => `${n} AI calls not going through ruby_llm…`, locations: rawOpenAI,
   })
 
@@ -581,7 +581,7 @@ export function runChecks(allFiles, meta = {}) {
     ? scan(files, /^app\/controllers\/.+_controller\.rb$/, new RegExp(`\\b(${userOwned.join('|')})\\.(find|find_by!?|find_by_id)\\(\\s*(params|id:)`), { skipComments: true })
     : []
   add({
-    id: 'unscoped-find', categories: ['security', 'rails'], severity: 'issue',
+    id: 'unscoped-find', categories: ['security'], severity: 'issue',
     title: 'Records that belong to a user are found with Model.find(params[...]) instead of current_user.things.find(...): any signed-in user could open or change them',
     ticker: (n) => `${n} records looked up without current_user scoping…`, locations: unscopedFind,
   })
@@ -613,6 +613,13 @@ export function runChecks(allFiles, meta = {}) {
   add({
     id: 'debug-leftovers', categories: ['wagonmade', 'security'], severity: 'note',
     title: 'Leftover debugging (puts / binding.irb / byebug)', ticker: (n) => `${n} leftover debug lines…`, locations: debugLeft,
+  })
+
+  // Spots clearly above bootcamp level: only a HINT for the "make sure you can explain these" list (the AI decides)
+  const advanced = scan(files, /^(app|lib)\/.*\.(rb|js)$/, /\b(define_method|method_missing|instance_variable_(get|set)|class_eval|instance_eval|public_send|ObjectSpace|Thread\.new|Mutex|with_lock|\.lock!|find_by_sql|connection\.execute|Arel\.|after_commit|ActiveSupport::Concern|Data\.define|MutationObserver|IntersectionObserver|ResizeObserver|new Worker|new Proxy|AudioContext|SpeechSynthesis|webkitSpeech|crypto\.subtle|WebGL)\b|\bfrom ["']three|\bTHREE\.|\btransaction do\b/, { skipComments: true })
+  add({
+    id: 'advanced-code', categories: ['wagonmade'], severity: 'note',
+    title: 'Code that looks well above bootcamp level (possible "can you explain this?" spots)', ticker: (n) => `${n} spots well beyond the course…`, locations: advanced,
   })
 
   // ── WAGONMADE signals ───────────────────────────────────────────────────────

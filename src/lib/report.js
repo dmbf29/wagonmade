@@ -52,17 +52,15 @@ export function toCategory(def, r = { error: 'No answer' }) {
     applicable: r.error ? true : r.applicable !== false,
     error: r.error || null, hint: r.hint || null,
     score: r.score ?? null, grade: r.error ? null : r.grade,
-    verdict: r.verdict || '', wins: r.wins || [], levelUps: r.levelUps || [], removed: r.removed || 0,
+    verdict: r.verdict || '', wins: r.wins || [], levelUps: r.levelUps || [], explainThis: r.explainThis || [], removed: r.removed || 0,
   }
 }
 
 // Everything that is derived from the categories (so it can be redone after a single re-run)
 function summarize(categories) {
   const score = overallScore(categories)
-  const wagonmade = categories.find((c) => c.id === 'wagonmade')
   return {
     overall: score == null ? null : { score, grade: gradeFor(score) },
-    wagonmade: wagonmade && wagonmade.score != null ? { score: wagonmade.score, grade: wagonmade.grade } : null,
     categories,
     missions: pickMissions(categories),
     removedTotal: categories.reduce((n, c) => n + (c.removed || 0), 0),
@@ -151,6 +149,5 @@ export function diffReports(prev, cur) {
     for (const w of c.wins) if (!oldWins.has(norm(w.title))) newWins.push({ ...w, categoryName: c.name })
   }
   const delta = cur.overall && prev.overall ? cur.overall.score - prev.overall.score : null
-  const wagonmadeDelta = cur.wagonmade && prev.wagonmade ? cur.wagonmade.score - prev.wagonmade.score : null
-  return { delta, wagonmadeDelta, categories, resolved, added, newWins, sameCode: prev.repo.sha === cur.repo.sha }
+  return { delta, categories, resolved, added, newWins, sameCode: prev.repo.sha === cur.repo.sha }
 }

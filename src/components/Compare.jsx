@@ -48,7 +48,7 @@ export default function Compare({ a, b, weights, onBack, onOpen }) {
           </thead>
           <tbody>
             <tr className="cmp-total">
-              <th scope="row">Overall</th>
+              <th scope="row">Wagonmade Score</th>
               {[oa, ob].map((o, i) => <td key={i} className="cmp-cell">{o ? <><GradeBadge grade={o.grade} /><span className="cmp-score">{o.score}</span></> : '–'}</td>)}
               {same && <td className="cmp-delta">{oa && ob && ob.score !== oa.score ? <strong className={ob.score > oa.score ? 'up' : 'down'}>{sign(ob.score - oa.score)}</strong> : '·'}</td>}
             </tr>

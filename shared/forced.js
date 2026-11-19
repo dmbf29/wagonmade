@@ -5,9 +5,10 @@
 
 import { blobUrl } from '../api/_lib/verify.js'
 
+// covers: how the AI words the SAME problem, so its duplicate is dropped when the forced one is shown
 export const FORCED = [
   {
-    check: 'tailwind-classes', category: 'frontend', impact: 5,
+    check: 'tailwind-classes', covers: /tailwind|utility[- ]class/i, category: 'frontend', impact: 5,
     title: 'Tailwind-style classes in a Bootstrap app',
     concept: 'Rails assets: Bootstrap SCSS, color variables, asset pipeline',
     why: (n) => `${n} class lists look like Tailwind (utility classes such as flex, px-4, text-gray-600). This course stack is Bootstrap 5 plus your own SCSS, so these won't be styled the way you expect and make the app look like two different projects.`,
@@ -15,7 +16,7 @@ export const FORCED = [
     example: '<div class="d-flex justify-content-between px-3">\n  <a class="btn btn-primary">Save</a>\n</div>',
   },
   {
-    check: 'old-bootstrap', category: 'frontend', impact: 4,
+    check: 'old-bootstrap', covers: /bootstrap ?[34]|pull-(left|right)|data-toggle|\b(ml|mr|pl|pr)-\d/i, category: 'frontend', impact: 4,
     title: 'Bootstrap 3/4 class names in a Bootstrap 5 app',
     concept: 'HTML, CSS & Bootstrap components',
     why: (n) => `${n} class names come from an older Bootstrap (for example pull-right, ml-2, data-toggle). Bootstrap 5 renamed them, so they silently do nothing.`,
@@ -23,7 +24,7 @@ export const FORCED = [
     example: '<div class="ms-2" data-bs-toggle="modal">',
   },
   {
-    check: 'hex-in-scss', category: 'frontend', impact: (n) => (n >= 10 ? 4 : 3),
+    check: 'hex-in-scss', covers: /hex|hard-?coded colou?rs?|colou?r variables?|_colors/i, category: 'frontend', impact: (n) => (n >= 10 ? 4 : 3),
     title: 'Hard-coded hex colors instead of your color variables',
     concept: 'Rails assets: Bootstrap SCSS, color variables, asset pipeline',
     why: (n) => `${n} colors are typed as hex values in your stylesheets. You already keep a palette in config/_colors.scss: using the $variables keeps the whole app in one look and lets you re-theme it in one place.`,
@@ -31,7 +32,7 @@ export const FORCED = [
     example: '// config/_colors.scss\n$brand: #0d9488;\n\n// components/_navbar.scss\n.navbar { background: $brand; }',
   },
   {
-    check: 'hex-in-views', category: 'frontend', impact: 3,
+    check: 'hex-in-views', covers: /hex|hard-?coded colou?rs?|colou?rs? typed/i, category: 'frontend', impact: 3,
     title: 'Hex colors typed directly in views',
     concept: 'Rails assets: Bootstrap SCSS, color variables, asset pipeline',
     why: (n) => `${n} colors are typed straight into your HTML. Colors belong in your SCSS palette so every page stays consistent.`,
@@ -39,7 +40,7 @@ export const FORCED = [
     example: '.badge-tag { background: $brand; }',
   },
   {
-    check: 'raw-llm-client', category: 'ai_assets', impact: 5,
+    check: 'raw-llm-client', covers: /openai::client|ruby-?openai|raw (http|client)|direct(ly)?[^.]*(openai|ai provider)|instead of ruby_?llm/i, category: 'ai_assets', impact: 5,
     title: 'AI calls that skip ruby_llm',
     concept: 'Intro to LLMs: RubyLLM',
     why: (n) => `${n} place${n > 1 ? 's' : ''} talk to an AI provider directly (OpenAI::Client, an OpenAI/Anthropic gem or raw HTTP). In this course every AI call goes through RubyLLM, so keys, models and errors are handled in one way.`,
@@ -47,7 +48,7 @@ export const FORCED = [
     example: 'chat = RubyLLM.chat(model: "gpt-4.1")\nchat.with_instructions(system_prompt)\nresponse = chat.ask(user_message)',
   },
   {
-    check: 'unscoped-find', category: 'security', impact: 5,
+    check: 'unscoped-find', covers: /current_user|find\(params|someone else|other users?|scope[sd]? [^.]*(lookup|record|trip|find)/i, category: 'security', impact: 5,
     title: "Anyone signed in can open someone else's records",
     concept: 'Authentication with Devise',
     why: (n) => `${n} lookup${n > 1 ? 's find' : ' finds'} a record that belongs to a user with Model.find(params[:id]). Any signed-in user who guesses an id can open or change another user's data. Starting from current_user keeps it private.`,
@@ -55,7 +56,7 @@ export const FORCED = [
     example: '@trip = current_user.trips.find(params[:id])',
   },
   {
-    check: 'secret-files', category: 'security', impact: 5, secret: true,
+    check: 'secret-files', covers: /secret|\.env|api key|master\.key|committed/i, category: 'security', impact: 5, secret: true,
     title: 'A secret file is committed to git',
     concept: 'Secrets with dotenv (.env)',
     why: () => 'A .env or key file is in your repository, so anyone who can see the repo can see your keys. Remove it from git and create a fresh key.',
@@ -63,7 +64,7 @@ export const FORCED = [
     example: '# .gitignore\n.env*',
   },
   {
-    check: 'secret-strings', category: 'security', impact: 5, secret: true,
+    check: 'secret-strings', covers: /secret|\.env|api key|master\.key|committed/i, category: 'security', impact: 5, secret: true,
     title: 'A key-looking string is committed in the code',
     concept: 'Secrets with dotenv (.env)',
     why: () => 'Something that looks like an API key is written in a file. Keys belong in .env (read with ENV["KEY"]), never in committed code. Create a new key, the old one is now public.',
@@ -82,6 +83,12 @@ function evidenceFor(loc, files, repoRef, secret) {
   const start = Math.max(1, loc.line)
   const end = Math.min(lines.length, start + 2)
   return { file: loc.path, startLine: start, endLine: end, snippet: lines.slice(start - 1, end).join('\n').replace(/\s+$/, ''), url: blobUrl(repoRef, loc.path, start, end) }
+}
+
+// Does this AI level-up repeat one of the forced ones of its category?
+export function repeatsForced(categoryId, levelUp, forced) {
+  const text = `${levelUp.title} ${levelUp.why} ${levelUp.mission}`
+  return forced.some((f) => FORCED.some((r) => r.category === categoryId && r.title === f.title && r.covers.test(text)))
 }
 
 // Level-ups built from the checks that belong to this category

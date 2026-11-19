@@ -27,6 +27,17 @@ function Win({ win }) {
   )
 }
 
+export function ExplainThis({ item }) {
+  return (
+    <li className="explain-item">
+      <h4>🎓 {item.title}</h4>
+      <p>{item.whatItDoes}</p>
+      <p className="explain-q">{item.question}</p>
+      <Evidence evidence={item.evidence} />
+    </li>
+  )
+}
+
 export function LevelUp({ item, showExample = true }) {
   return (
     <li className="levelup">
@@ -39,7 +50,7 @@ export function LevelUp({ item, showExample = true }) {
   )
 }
 
-export default function CategoryCard({ cat, index, open, onToggle, headline, onRerun, busy }) {
+export default function CategoryCard({ cat, index, open, onToggle, onRerun, busy }) {
   const [showLow, setShowLow] = useState(false)
   const confident = cat.levelUps.filter((l) => l.confidence !== 'low')
   const low = cat.levelUps.filter((l) => l.confidence === 'low')
@@ -47,17 +58,16 @@ export default function CategoryCard({ cat, index, open, onToggle, headline, onR
   const failed = !!cat.error
 
   return (
-    <article className={`card cat ${open ? 'is-open' : ''} ${na ? 'is-na' : ''} ${headline ? 'is-headline' : ''}`} style={{ '--i': index }}>
+    <article className={`card cat ${open ? 'is-open' : ''} ${na ? 'is-na' : ''}`} style={{ '--i': index }}>
       <button className="cat-head" onClick={onToggle} aria-expanded={open} disabled={failed}>
-        {/* the headline category's score is already big in the banner: don't repeat it here */}
-        {!(headline && !failed) && <GradeBadge grade={failed ? '?' : cat.grade} />}
+        <GradeBadge grade={failed ? '?' : cat.grade} />
         <span className="cat-text">
-          <span className="cat-name">{headline && !failed ? "What's behind your Wagonmade score" : cat.name}</span>
-          <span className="cat-tagline">{headline && !failed ? 'Wins and next steps for how well the app fits what we learned' : cat.tagline}</span>
+          <span className="cat-name">{cat.name}</span>
+          <span className="cat-tagline">{cat.tagline}</span>
         </span>
-        {!na && !failed && !headline && <span className="cat-score">{cat.score}</span>}
+        {!na && !failed && <span className="cat-score">{cat.score}</span>}
       </button>
-      {!na && !failed && !headline && <div className="bar" role="presentation"><span className={`bar-fill bar-${cat.grade.toLowerCase()}`} style={{ width: `${cat.score}%` }} /></div>}
+      {!na && !failed && <div className="bar" role="presentation"><span className={`bar-fill bar-${cat.grade.toLowerCase()}`} style={{ width: `${cat.score}%` }} /></div>}
       <p className="cat-verdict">{failed ? `We couldn't finish this one: ${cat.error}` : cat.verdict}</p>
 
       {onRerun && (failed || (open && !na)) && (
@@ -69,6 +79,13 @@ export default function CategoryCard({ cat, index, open, onToggle, headline, onR
           {cat.wins.length > 0 && <><h3 className="section-label">Wins</h3><ul className="findings">{cat.wins.map((w, i) => <Win key={i} win={w} />)}</ul></>}
           {confident.length > 0 && <><h3 className="section-label">Level-ups</h3><ul className="findings">{confident.map((l, i) => <LevelUp key={i} item={l} />)}</ul></>}
           {confident.length === 0 && <p className="muted">Nothing to level-up here. Nice.</p>}
+          {cat.explainThis?.length > 0 && (
+            <>
+              <h3 className="section-label">Make sure you can explain these</h3>
+              <p className="muted small">Great, ambitious code, and ahead of what we taught. It's yours, so be ready to walk the class through how it works.</p>
+              <ul className="findings">{cat.explainThis.map((x, i) => <ExplainThis key={i} item={x} />)}</ul>
+            </>
+          )}
           {low.length > 0 && (
             <>
               <button className="btn btn-link" onClick={() => setShowLow(!showLow)}>{showLow ? 'Hide' : 'Show'} {low.length} more idea{low.length > 1 ? 's' : ''} we're less sure about</button>

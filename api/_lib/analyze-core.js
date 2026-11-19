@@ -3,7 +3,7 @@
 import { CATEGORY_BY_ID, gradeFor, LIMITS } from '../../shared/config.js'
 import { selectFiles } from '../../shared/select.js'
 import { CRITERIA, buildPartPrompt, buildSummaryPrompt, buildSystemPrompt } from '../_prompts/index.js'
-import { FINDINGS_SCHEMA, SUMMARY_SCHEMA, askModel, modelName } from './openai.js'
+import { FINDINGS_SCHEMA, FINDINGS_SCHEMA_EXPLAIN, REPORT_SCHEMA, REPORT_SCHEMA_EXPLAIN, SUMMARY_SCHEMA, askModel, modelName } from './openai.js'
 import { blobUrl, verifyEvidence, verifyFact } from './verify.js'
 import { HttpError } from './github.js'
 import { capScore } from '../../shared/scoring.js'
@@ -61,6 +61,7 @@ function mockAnswer(files, category) {
       score: 70 + ((f.path.length * 7) % 25),
       verdict: `Mock mode: a friendly one-line verdict for ${category.name}.`,
       wins: [{ title: 'A tidy, readable start', detail: 'This is a mock win, quoted from a real line of your code.', evidence: ev() }],
+      explain_this: category.id === 'wagonmade' ? [{ title: 'A mock advanced spot', what_it_does: 'Mock mode: pretend this line does something clever.', question: 'Can you walk us through what happens on this line?', evidence: ev() }] : [],
       level_ups: [
         { title: 'A mock level-up with real evidence', why: 'Mock mode never calls OpenAI, but the evidence below is real and verified.', concept: 'JavaScript in Rails: Stimulus & importmap', confidence: 'high', impact: 4, mission: 'Next time, trust what you already know.', example: 'data-controller="hello"', evidence: ev() },
         { title: 'A made-up finding that should be removed', why: 'This evidence does not exist, so the verifier drops it.', concept: 'Models & CRUD, resources (Rails 101)', confidence: 'medium', impact: 3, mission: 'Never shown.', example: '', evidence: { file: f.path, start_line: 1, end_line: 1, snippet: 'this line does not exist anywhere' } },
@@ -105,10 +106,11 @@ export async function analyzeCategory(input) {
     ? `NOTE: ${[...(input.skippedPaths || []), ...left].length} file(s) were left out to stay within the size budget (e.g. ${[...(input.skippedPaths || []), ...left].slice(0, 5).join(', ')}). Do not comment on files you cannot see.`
     : ''
 
+  const wantsExplain = category.id === 'wagonmade'
   const user = buildUserMessage({ category, files, versions: input.versions, facts: input.facts, mode: input.mode, pr: input.pr, git: input.git, tree: input.tree, skippedNote })
   const system = part ? buildPartPrompt(category.name, CRITERIA[category.id], part.index, part.total) : buildSystemPrompt(category.name, CRITERIA[category.id])
 
-  const { json: raw, usage } = process.env.MOCK_LLM ? mockAnswer(files, category) : await askModel(system, user, part ? FINDINGS_SCHEMA : undefined)
+  const { json: raw, usage } = process.env.MOCK_LLM ? mockAnswer(files, category) : await askModel(system, user, wantsExplain ? (part ? FINDINGS_SCHEMA_EXPLAIN : REPORT_SCHEMA_EXPLAIN) : (part ? FINDINGS_SCHEMA : REPORT_SCHEMA))
 
   // ── verification ──
   const byPath = Object.fromEntries(files.map((f) => [f.path, f]))
@@ -148,7 +150,15 @@ export async function analyzeCategory(input) {
     })
   }
 
-  if (part) return { category: category.id, stage: 'findings', wins, levelUps, removed, filesSeen: files.length, usage }
+  // "Make sure you can explain this": advanced code spots, verified like every other piece of evidence
+  const explainThis = []
+  for (const x of (raw.explain_this || []).slice(0, 3)) {
+    const r = verify(x.evidence, { required: true })
+    if (!r.ok) { removed += 1; continue }
+    explainThis.push({ title: x.title, whatItDoes: x.what_it_does, question: x.question, evidence: withLinks(r) })
+  }
+
+  if (part) return { category: category.id, stage: 'findings', wins, levelUps, explainThis, removed, filesSeen: files.length, usage }
 
   const applicable = category.canBeNA ? raw.applicable !== false : true
   const cap = applicable ? capScore(Math.min(100, Math.max(0, Math.round(raw.score))), levelUps.slice(0, 3)) : { score: null }
@@ -162,6 +172,7 @@ export async function analyzeCategory(input) {
     verdict: raw.verdict,
     wins,
     levelUps: levelUps.slice(0, 3),
+    explainThis,
     removed,
     filesSeen: files.length,
     model: process.env.MOCK_LLM ? 'mock' : modelName(),

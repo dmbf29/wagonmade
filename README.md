@@ -76,7 +76,7 @@ The quick-check list is saved in each report (`quickChecks`) and shown under the
 
 ## Phase 2 features
 
-- **Weights** (⚖ Weights in the report toolbar): sliders per category, saved in this browser. They only change Overall and the mission order. Saved reports are untouched.
+- **Weights** (⚖ Weights in the report toolbar): sliders per category, saved in this browser. They only change the Wagonmade Score and the mission order. Saved reports are untouched.
 - **Re-run this category** (open a card, or on one that failed): redoes just that category and saves the report.
 - **What changed**: when an older report of the same repo (and PR) exists, a panel shows score moves, level-ups you tackled, new wins and new things to try.
 - **Compare**: tick two reports in History, then "Compare 2" for a side-by-side table. For two runs of the same project it also shows the differences.

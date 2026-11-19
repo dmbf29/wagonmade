@@ -7,8 +7,8 @@ import Changes from './Changes.jsx'
 import CategoryCard, { GradeBadge, LevelUp, PlaceholderCard } from './CategoryCard.jsx'
 
 function Hero({ report, animate }) {
-  const overall = useCountUp(report.overall?.score ?? 0, { enabled: animate, delay: 300 })
-  const wagonmade = useCountUp(report.wagonmade?.score ?? 0, { enabled: animate, delay: 900, duration: 1800 })
+  const score = useCountUp(report.overall?.score ?? 0, { enabled: animate, delay: 400, duration: 1800 })
+  const counted = report.categories.filter((c) => c.applicable && !c.error).length
   return (
     <section className={`hero ${animate ? 'animate' : ''}`}>
       <div className="hero-id">
@@ -22,22 +22,14 @@ function Hero({ report, animate }) {
         )}
       </div>
       <div className="hero-scores">
-        {report.wagonmade && (
-          <div className="score-panel score-wagonmade">
-            <p className="eyebrow">Wagonmade Score · how well it fits what we learned</p>
-            <div className="score-row">
-              <span className="big-number">{wagonmade}</span>
-              <span className="stamp-wrap"><span className={`stamp grade grade-${report.wagonmade.grade.toLowerCase()}`}>{report.wagonmade.grade}</span></span>
-            </div>
-          </div>
-        )}
         {report.overall && (
-          <div className="score-panel">
-            <p className="eyebrow">Overall · average of all {report.categories.filter((c) => c.applicable && !c.error).length} categories</p>
+          <div className="score-panel score-wagonmade">
+            <p className="eyebrow">Wagonmade Score</p>
             <div className="score-row">
-              <span className="big-number small">{overall}</span>
-              <GradeBadge grade={report.overall.grade} size="lg" />
+              <span className="big-number">{score}</span>
+              <span className="stamp-wrap"><span className={`stamp grade grade-${report.overall.grade.toLowerCase()}`}>{report.overall.grade}</span></span>
             </div>
+            <p className="score-note">Put together from the {counted} categories below. Open any card for feedback.{report.weighted ? ' (Your own weights are on.)' : ''}</p>
           </div>
         )}
       </div>
@@ -92,7 +84,7 @@ export default function ReportView({ report, live, animate, onPresent, onCopy, o
         {CATEGORIES.map((def, i) => {
           const cat = byId[def.id]
           if (!cat) return <PlaceholderCard key={def.id} def={def} index={i} />
-          return <CategoryCard key={def.id} cat={cat} index={i} headline={def.headline} onRerun={!running && onRerun ? () => onRerun(def.id) : null} busy={rerunning === def.id} open={openId === def.id} onToggle={() => setOpenId(openId === def.id ? null : def.id)} />
+          return <CategoryCard key={def.id} cat={cat} index={i} onRerun={!running && onRerun ? () => onRerun(def.id) : null} busy={rerunning === def.id} open={openId === def.id} onToggle={() => setOpenId(openId === def.id ? null : def.id)} />
         })}
       </div>
       {!running && <Missions missions={report.missions} />}

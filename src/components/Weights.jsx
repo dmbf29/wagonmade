@@ -1,7 +1,7 @@
 import React from 'react'
 import { CATEGORIES } from '../../shared/config.js'
 
-// Sliders for how much each category counts in "Overall". 0 = leave it out.
+// Sliders for how much each category counts in the Wagonmade Score. 0 = leave it out.
 export default function Weights({ weights, onChange, onReset, onClose }) {
   const set = (id, v) => onChange({ ...weights, [id]: v })
   return (
@@ -10,7 +10,7 @@ export default function Weights({ weights, onChange, onReset, onClose }) {
         <h3>How much should each category count?</h3>
         <button className="btn btn-ghost" onClick={onClose}>Close</button>
       </header>
-      <p className="muted small">Changes the Overall score only. Saved in this browser, and the category scores never change.</p>
+      <p className="muted small">Changes the Wagonmade Score only. Saved in this browser, and the category scores never change.</p>
       <ul className="weights">
         {CATEGORIES.map((c) => (
           <li key={c.id}>

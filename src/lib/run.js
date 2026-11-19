@@ -8,7 +8,7 @@ import { runChecks, limitChecksToPR, factsForCategory } from '../../shared/check
 import { selectFiles } from '../../shared/select.js'
 import { buildReport } from './report.js'
 import { mergeFindings, partsFor, sameFinding, splitFiles } from './split.js'
-import { forcedLevelUps } from '../../shared/forced.js'
+import { forcedLevelUps, repeatsForced } from '../../shared/forced.js'
 import { capScore } from '../../shared/scoring.js'
 
 export async function postJson(url, body) {
@@ -46,7 +46,7 @@ function withForced(cat, r, checks, data, repoRef) {
   if (r.error || r.applicable === false) return r
   const forced = forcedLevelUps(cat.id, checks, data.files, repoRef)
   if (!forced.length) return r
-  const rest = (r.levelUps || []).filter((l) => !forced.some((f) => sameFinding(f, l)))
+  const rest = (r.levelUps || []).filter((l) => !forced.some((f) => sameFinding(f, l)) && !repeatsForced(cat.id, l, forced))
   const levelUps = [...forced, ...rest].slice(0, 4)
   const cap = capScore(r.score, levelUps)
   return { ...r, levelUps, score: cap.score, grade: cap.capped ? gradeFor(cap.score) : r.grade, capped: r.capped || cap.capped }
@@ -85,7 +85,7 @@ async function analyzeCore(cat, { data, checks, tree, repoRef, skippedPaths }) {
       levelUps: merged.levelUps.map((l) => ({ title: l.title, why: l.why, concept: l.concept, confidence: l.confidence, impact: l.impact, file: l.evidence?.file })),
     }
     const summary = await postJson('/api/analyze', { category: cat.id, stage: 'summary', findings: brief, facts: base.facts, versions: base.versions, mode: base.mode, filesSeen: merged.filesSeen, skippedPaths: base.skippedPaths })
-    return { ...summary, wins: merged.wins, levelUps: merged.levelUps, removed: merged.removed, filesSeen: merged.filesSeen, parts: n }
+    return { ...summary, wins: merged.wins, levelUps: merged.levelUps, explainThis: merged.explainThis, removed: merged.removed, filesSeen: merged.filesSeen, parts: n }
   } catch (err) {
     return { category: cat.id, error: err.message, hint: err.hint }
   }

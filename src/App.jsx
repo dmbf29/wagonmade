@@ -52,7 +52,7 @@ export default function App() {
         const def = CATEGORIES.find((c) => c.id === r.category)
         const cat = r.error
           ? { id: def.id, name: def.name, tagline: def.tagline, applicable: true, error: r.error, wins: [], levelUps: [], score: null, grade: null, verdict: '' }
-          : { id: def.id, name: def.name, tagline: def.tagline, applicable: r.applicable !== false, score: r.score, grade: r.grade, verdict: r.verdict, wins: r.wins, levelUps: r.levelUps, removed: r.removed }
+          : { id: def.id, name: def.name, tagline: def.tagline, applicable: r.applicable !== false, score: r.score, grade: r.grade, verdict: r.verdict, wins: r.wins, levelUps: r.levelUps, explainThis: r.explainThis || [], removed: r.removed }
         return { ...l, categories: [...l.categories.filter((c) => c.id !== cat.id), cat] }
       }
       default: return l

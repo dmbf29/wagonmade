@@ -63,8 +63,13 @@ export function mergeFindings(parts) {
       if (w && wins.length < 3 && !wins.some((k) => norm(k.title) === norm(w.title) || sameFinding(k, w, { threshold: 0.35 }))) wins.push(w)
     }
   }
+  const explainThis = []
+  for (const x of parts.flatMap((p) => p.explainThis || [])) {
+    if (explainThis.length < 3 && !explainThis.some((k) => sameFinding(k, x, { text: (f) => f.title }))) explainThis.push(x)
+  }
   return {
     wins,
+    explainThis,
     levelUps: levelUps.slice(0, 3),
     removed: parts.reduce((n, p) => n + (p.removed || 0), 0),
     filesSeen: parts.reduce((n, p) => n + (p.filesSeen || 0), 0),
