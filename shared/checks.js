@@ -724,6 +724,7 @@ export function runChecks(allFiles, meta = {}) {
     usesRubyLLM: usesRubyLLM > 0,
     hasUploads: attachments.length > 0 || fileFields.length > 0,
     hasDevise: devise,
+    hasUsers: devise || paths.includes('app/models/user.rb'),
     authInApplicationController: authInApp,
     dotenvGem,
   }
@@ -756,6 +757,10 @@ export function factsForCategory(result, category) {
   const wanted = category.checks.includes('*') ? null : category.checks
   const rows = result.checks.filter((c) => !wanted || c.categories.some((x) => wanted.includes(x)))
   const notes = []
+  // Early CRUD apps have no users yet: never talk about sign-in, Devise, current_user or authorization then
+  if (['security', 'rails_way', 'wagonmade', 'javascript', 'frontend'].includes(category.id) && !result.stats.hasUsers) {
+    notes.push('USERS: this app has NO users yet (no Devise gem, no User model). Do NOT mention authentication, sign-in, Devise, current_user, authorization or "who can do what": the course has not taught that at this stage.')
+  }
   if (category.id === 'ai_assets' || category.id === 'security') {
     notes.push(result.stats.hasUploads
       ? 'UPLOADS: this app DOES attach files (Active Storage attachments or file fields).'

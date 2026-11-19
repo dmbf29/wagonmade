@@ -69,6 +69,7 @@ async function analyzeCore(cat, { data, checks, tree, repoRef, skippedPaths }) {
       facts: factsForCategory(checks, cat),
       mode: data.mode, pr: data.pr, git: data.git, tree, repo: repoRef,
       noUploads: !checks.stats.hasUploads,
+      noUsers: !checks.stats.hasUsers,
     }
     const slim = (fs) => fs.map((f) => ({ path: f.path, content: f.content, changed: f.changed, truncated: f.truncated }))
     const n = cat.kind === 'code' ? partsFor(selected) : 1

@@ -128,7 +128,7 @@ export async function analyzeCategory(input) {
   }
 
   const wins = []
-  for (const w of (raw.wins || []).slice(0, 3)) {
+  for (const w of (raw.wins || []).filter((x) => !noUsersTalk(x)).slice(0, 3)) {
     const r = verify(w.evidence, { required: false })
     if (!r.ok) { removed += 1; continue }
     wins.push({ title: w.title, detail: w.detail, evidence: withLinks(r) })
@@ -137,8 +137,11 @@ export async function analyzeCategory(input) {
   // the AI sometimes talks about Cloudinary in apps that have no uploads at all: never show that
   const storageTalk = /cloudinary|active ?storage|storage\.yml/i
   // ...and advice that needs a topic they have not been taught yet (Active Job, Pundit, tests...) is dropped too
+  // ...and talk about sign-in / Devise / current_user in an app that has no users yet
+  const authTalk = /authenticat|devise|current_user|sign(ed)?[- ]?(in|up)|log(ged)?[- ]?in\b|authori[sz]|pundit|scop\w* (to|by) (a |the )?(current |signed-in )?user/i
+  const noUsersTalk = (x) => input.noUsers && authTalk.test(`${x.title} ${x.why || x.detail || ''} ${x.mission || ''}`)
   const notYet = (x) => NOT_YET.some((n) => n.re.test(`${x.title} ${x.why} ${x.mission} ${x.example}`))
-  for (const l of (raw.level_ups || []).filter((x) => !(input.noUploads && storageTalk.test(`${x.title} ${x.why} ${x.mission}`)) && !notYet(x)).slice(0, 4)) {
+  for (const l of (raw.level_ups || []).filter((x) => !(input.noUploads && storageTalk.test(`${x.title} ${x.why} ${x.mission}`)) && !noUsersTalk(x) && !notYet(x)).slice(0, 4)) {
     const r = verify(l.evidence, { required: true })
     if (!r.ok) { removed += 1; continue }
     levelUps.push({
